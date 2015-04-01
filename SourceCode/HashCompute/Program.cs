@@ -11,52 +11,97 @@ namespace HashCompute
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Input: {0}", args[0]);
-            Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(GetHashValue(args[0])).Replace("\r", "").Replace("\n", ""));
-            Console.WriteLine("Hex  : 0x{0}", ConvertHashBytesToString(GetHashValue(args[0])).ToUpper());
-        }
-
-        public string GetHashValueAsString(string plainString)
-        {
-            byte[] result = GetHashValue(plainString);
-
-            // Return the String representation in HEX format per byte value
-            return ConvertHashBytesToString(result);
-        }
-
-        public static byte[] GetHashValue(string plainString)
-        {
-            byte[] plainBytes = ConvertStringToByte(plainString);
-
-            // Get the Hash Value in bytes from SHA2 512 bit algorithm method
-            SHA512Managed hashAlgorithm = new SHA512Managed();
-            return hashAlgorithm.ComputeHash(plainBytes);
-        }
-
-        /// <summary>
-        /// Convert Hash bytes to Hexadecimal String format 
-        /// </summary>
-        private static string ConvertHashBytesToString(byte[] hashBytes)
-        {
-            StringBuilder hashString = new StringBuilder();
-            foreach (byte b in hashBytes)
+            bool help = args.Any(a => a.EqualsIgnoreCase("-h") || a.EqualsIgnoreCase("?") || a.EqualsIgnoreCase("--help") || a.EqualsIgnoreCase("/h"));
+            bool version = args.Any(a => a.EqualsIgnoreCase("-v") || a.EqualsIgnoreCase("--version") || a.EqualsIgnoreCase("/v"));
+            
+            if (!help && !version && args.Length > 0)
             {
-                hashString.Append(b.ToString("x2"));
-            }
+                try
+                {
+                    HashAlgorithm algorithm = GetHashAlgorithm(args.Length > 1 ? args[1] : "Default");
+                    byte[] hash = GetHash(args[0], algorithm);
 
-            return hashString.ToString();
+                    Console.WriteLine("Input: {0}", args[0]);
+                    Console.WriteLine("Hash : {0}", algorithm.GetType().Name);
+                    Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
+                    Console.WriteLine("Hex  : 0x{0}", hash.GetString());
+                }
+                catch (Exception ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("{0}: {1}", ex.GetType().Name, ex.Message);
+                }
+            }
+            else if (version)
+            {
+                Console.WriteLine("HashCompute.exe v{0}.{1}", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
+            }
+            else
+            {
+                Console.WriteLine(" === HashCompute v{0}.{1} ===", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
+                Console.WriteLine("Computes the hash of the terminal input (as a UTF-8 String)");
+                Console.WriteLine("Defaults to SHA512.");
+                Console.WriteLine();
+                Console.WriteLine("Usage: ");
+                Console.WriteLine(" - HashCompute (input) [algorithm]");
+                Console.WriteLine();
+                Console.WriteLine("Examples: ");
+                Console.WriteLine(" - HashCompute test");
+                Console.WriteLine(" - HashCompute test MD5");
+                Console.WriteLine(" - HashCompute test SHA256");
+                Console.WriteLine();
+                Console.WriteLine("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
+            }
+            Console.ResetColor();
         }
 
-        /// <summary>
-        /// Convert the Input String to byte[] for Hash computation
-        /// </summary>
-        private static byte[] ConvertStringToByte(string plainText)
+        public static byte[] GetHash(string input, HashAlgorithm algorithm = null, Encoding encoding = null)
         {
-            // Convert the string to UTF8Encoding  byte[]
-            UTF8Encoding Encode = new UTF8Encoding();
-            byte[] plainBytes = Encode.GetBytes(plainText);
+            algorithm = algorithm ?? new SHA512Managed();
 
-            return plainBytes;
+            return algorithm.ComputeHash(input.ToBytes(encoding));
+        }
+
+        public static byte[] GetHash(byte[] input, HashAlgorithm algorithm = null)
+        {
+            algorithm = algorithm ?? new SHA512Managed();
+
+            return algorithm.ComputeHash(input);
+        }
+
+        public static HashAlgorithm GetHashAlgorithm(string input = "SHA512")
+        {
+            switch (input.Replace("-", "").ToUpper())
+            {
+                case "SHA512":
+                case "512":
+                case "DEFAULT":
+                    return new SHA512Managed();
+
+                case "SHA256":
+                case "256":
+                    return new SHA256Managed();
+
+                case "SHA384":
+                case "384":
+                    return new SHA384Managed();
+
+                case "SHA1":
+                case "1":
+                    return new SHA1Managed();
+
+                case "MD5":
+                case "5":
+                    return new MD5CryptoServiceProvider();
+
+                case "RIPEMD":
+                case "RIP":
+                case "160":
+                    return new RIPEMD160Managed();
+
+                default:
+                    throw new NotSupportedException(String.Format("Unsupported Hash Algorithm ({0})", input));
+            }
         }
     }
 }
