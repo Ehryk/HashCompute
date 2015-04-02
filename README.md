@@ -19,6 +19,7 @@ Usage:
    - ``-u, --unmanaged: Uses unmanaged hash implementation, if possible``
    - ``-l, --lowercase: Displays hash hex in lowercase``
    - ``-c, --color: Disables Colored Output``
+   - ``-x, --omit0x: Disables 0x hex specifier``
  - ``Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD``
 
 Latest Changes:
