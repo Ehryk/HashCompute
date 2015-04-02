@@ -31,6 +31,8 @@ namespace HashCompute
         public bool LowerCase { get; set; }
         [Option('c', "color", DefaultValue = false, HelpText = "Disable colored output")]
         public bool Color { get; set; }
+        [Option('x', "omit0x", DefaultValue = false, HelpText = "Omit 0x Hex Specifier")]
+        public bool Omit0x { get; set; }
 
         //[HelpOption]
         public string GetUsage()

@@ -11,6 +11,7 @@ namespace HashCompute
         public static bool Managed = true;
         public static bool UpperCase = false;
         public static bool Color = true;
+        public static bool Omit0x = false;
 
         public static void Main(string[] args)
         {
@@ -21,6 +22,7 @@ namespace HashCompute
                 Managed = !options.Unmanaged;
                 UpperCase = !options.LowerCase;
                 Color = !options.Color;
+                Omit0x = options.Omit0x;
 
                 if (options.Version)
                     Console.Write("HashCompute.exe v{0}.{1}", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
@@ -59,7 +61,7 @@ namespace HashCompute
                     Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
                     if (Color)
                         Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("Hex  : 0x{0}", hash.GetString(UpperCase));
+                    Console.Write("Hex  : {0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
                 }
                 else
                 {
