@@ -29,12 +29,15 @@ namespace HashCompute
         public bool NoNewLine { get; set; }
         [Option('l', "lowercase", DefaultValue = false, HelpText = "Display hex in lower case")]
         public bool LowerCase { get; set; }
+        [Option('c', "color", DefaultValue = false, HelpText = "Disable colored output")]
+        public bool Color { get; set; }
 
-        [HelpOption]
+        //[HelpOption]
         public string GetUsage()
         {
-            return HelpText.AutoBuild(this,
-              (HelpText current) => HelpText.DefaultParsingErrorsHandler(this, current));
+            return HelpText.AutoBuild(this, (current) => { });
+            //return HelpText.AutoBuild(this,
+            //  (HelpText current) => HelpText.DefaultParsingErrorsHandler(this, current));
         }
     }
 }

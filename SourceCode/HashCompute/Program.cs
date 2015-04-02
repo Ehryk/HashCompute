@@ -9,7 +9,8 @@ namespace HashCompute
     {
         public static bool Verbose = false;
         public static bool Managed = true;
-        public static bool LowerCase = false;
+        public static bool UpperCase = false;
+        public static bool Color = true;
 
         public static void Main(string[] args)
         {
@@ -18,11 +19,12 @@ namespace HashCompute
             {
                 Verbose = options.Verbose;
                 Managed = !options.Unmanaged;
-                LowerCase = options.LowerCase;
+                UpperCase = !options.LowerCase;
+                Color = !options.Color;
 
                 if (options.Version)
-                    Console.WriteLine("HashCompute.exe v{0}.{1}", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
-                else if (options.Help || args.Any(a => a.Equals("?")))
+                    Console.Write("HashCompute.exe v{0}.{1}", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
+                else if (options.Help || args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
                     ShowHelp();
                 else
                     ComputeHash(options.Input, options.Algorithm);
@@ -32,7 +34,8 @@ namespace HashCompute
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
+                if (Color)
+                    Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Unknown Arguments: {0}", String.Join(" ", args));
                 Console.ResetColor();
 
@@ -54,18 +57,21 @@ namespace HashCompute
                     Console.WriteLine("Input: {0}", input);
                     Console.WriteLine("Hash : {0}", ha.GetType().Name);
                     Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("Hex  : 0x{0}", hash.GetString(!LowerCase));
+                    if (Color)
+                        Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write("Hex  : 0x{0}", hash.GetString(UpperCase));
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("0x{0}", hash.GetString(!LowerCase));
+                    if (Color)
+                        Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write("0x{0}", hash.GetString(UpperCase));
                 }
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
+                if (Color)
+                    Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
             }
         }
@@ -125,7 +131,8 @@ namespace HashCompute
         public static void ShowHelp()
         {
             Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.Cyan;
+            if (Color)
+                Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(" === HashCompute v{0}.{1} ===", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
             Console.ResetColor();
             Console.WriteLine("Computes the hash of the terminal input (as a UTF-8 String)");
@@ -134,7 +141,7 @@ namespace HashCompute
             Console.WriteLine("Usage and Examples: ");
             Console.WriteLine(" - HashCompute (Input) [Algorithm] [Options]");
             Console.WriteLine(" - HashCompute test");
-            Console.WriteLine(" - HashCompute test MD5 --verbose");
+            Console.WriteLine(" - HashCompute test MD5 --verbose --color=false");
             Console.WriteLine(" - HashCompute test SHA256 -uvnl");
             Console.WriteLine(" - HashCompute test --algorithm=SHA1 --unmanaged --nonewline --lowercase");
             Console.WriteLine(" - HashCompute [? | /? | -? | -h | --help | --version]");
