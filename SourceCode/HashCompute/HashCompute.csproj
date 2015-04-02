@@ -88,6 +88,7 @@
       PostBuildMacros;
     </PostBuildEventDependsOn>
     <PostBuildEvent>
+      copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)$(TargetExt)
       if $(ConfigurationName) == Release copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)_v@(Major).@(Minor)$(TargetExt)
     </PostBuildEvent>
   </PropertyGroup>
