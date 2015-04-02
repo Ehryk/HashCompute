@@ -67,7 +67,7 @@ namespace HashCompute
                 {
                     if (Color)
                         Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("0x{0}", hash.GetString(UpperCase));
+                    Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
                 }
             }
             catch (Exception ex)
