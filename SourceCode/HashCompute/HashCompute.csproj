@@ -57,7 +57,9 @@
       <Output TaskParameter="Assemblies" ItemName="Targets" />
     </GetAssemblyIdentity>
     <ItemGroup>
-      <VersionNumber Include="@(Targets->'%(Version)')" />
+      <Version Include="@(Targets->'%(Version)')" />
+      <Major Include="@(Version->Substring(0,1))" />
+      <Minor Include="@(Version->Substring(2,1))" />
     </ItemGroup>
   </Target>
   <PropertyGroup>
@@ -65,8 +67,9 @@
       $(PostBuildEventDependsOn);
       PostBuildMacros;
     </PostBuildEventDependsOn>
-    <PostBuildEvent>set VER=@(VersionNumber)
-if $(ConfigurationName) == Release copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)_v%25VER:~0,3%25$(TargetExt)</PostBuildEvent>
+    <PostBuildEvent>
+      if $(ConfigurationName) == Release copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)_v@(Major).@(Minor)$(TargetExt)
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
