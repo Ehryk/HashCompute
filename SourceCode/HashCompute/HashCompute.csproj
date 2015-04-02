@@ -56,11 +56,22 @@
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
       <Output TaskParameter="Assemblies" ItemName="Targets" />
     </GetAssemblyIdentity>
+    <PropertyGroup>
+      <Version>@(Targets->'%(Version)')</Version>
+      <Major>$(Version.Split('.')[0])</Major>
+      <Minor>$(Version.Split('.')[1])</Minor>
+      <Build>$(Version.Split('.')[2])</Build>
+      <Revision>$(Version.Split('.')[3])</Revision>      
+    </PropertyGroup>
     <ItemGroup>
-      <Version Include="@(Targets->'%(Version)')" />
-      <Major Include="@(Version->Substring(0,1))" />
-      <Minor Include="@(Version->Substring(2,1))" />
+      <Version Include="$(Version)" />
+      <Major Include="$(Major)" />
+      <Minor Include="$(Minor)" />
+      <Build Include="$(Build)" />
+      <Revision Include="$(Revision)" />
     </ItemGroup>
+    <Message Text="Version: @(Version)" />
+    <Message Text="Major.Minor.Build.Revision: @(Major).@(Minor).@(Build).@(Revision)" />
   </Target>
   <PropertyGroup>
     <PostBuildEventDependsOn>
