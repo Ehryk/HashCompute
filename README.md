@@ -24,6 +24,7 @@ Usage:
 Latest Changes:
 ---
  - Added various options and using NuGet packages
+ - Added all C# System.Cryptography hash algorithms
 
 Release History:
 ---
@@ -45,7 +46,7 @@ Contact:
 ---
 Eric Menze
  - [Email Me](mailto:rhaistlin+gh@gmail.com)
- - [www.ericmenze.com](http://ericmenze.com)
+ - [Portfolio](http://ericmenze.com)
  - [Github](https://github.com/Ehryk)
  - [Twitter](https://twitter.com/Ehryk42)
  - [Source Code](https://github.com/Ehryk/HashCompute)
