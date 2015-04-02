@@ -7,16 +7,18 @@ namespace HashCompute
 {
     class Program
     {
-        private static bool Verbose = false;
-        private static bool Managed = true;
+        public static bool Verbose = false;
+        public static bool Managed = true;
+        public static bool LowerCase = false;
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             var options = new Options();
             if (CommandLine.Parser.Default.ParseArguments(args, options))
             {
                 Verbose = options.Verbose;
                 Managed = !options.Unmanaged;
+                LowerCase = options.LowerCase;
 
                 if (options.Version)
                     Console.WriteLine("HashCompute.exe v{0}.{1}", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
@@ -53,12 +55,12 @@ namespace HashCompute
                     Console.WriteLine("Hash : {0}", ha.GetType().Name);
                     Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("Hex  : 0x{0}", hash.GetString());
+                    Console.Write("Hex  : 0x{0}", hash.GetString(!LowerCase));
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("0x{0}", hash.GetString());
+                    Console.Write("0x{0}", hash.GetString(!LowerCase));
                 }
             }
             catch (Exception ex)
@@ -105,7 +107,6 @@ namespace HashCompute
 
                 case "MD5":
                 case "MD":
-                case "5":
                     //Unmanaged Only
                     return new MD5CryptoServiceProvider();
 
@@ -130,14 +131,12 @@ namespace HashCompute
             Console.WriteLine("Computes the hash of the terminal input (as a UTF-8 String)");
             Console.WriteLine("Defaults to SHA512.");
             Console.WriteLine();
-            Console.WriteLine("Usage: ");
+            Console.WriteLine("Usage and Examples: ");
             Console.WriteLine(" - HashCompute (Input) [Algorithm] [Options]");
-            Console.WriteLine();
-            Console.WriteLine("Examples: ");
             Console.WriteLine(" - HashCompute test");
-            Console.WriteLine(" - HashCompute test MD5");
-            Console.WriteLine(" - HashCompute test SHA256 -uvn");
-            Console.WriteLine(" - HashCompute test --algorithm=SHA1 --unmanaged --verbose --nonewline");
+            Console.WriteLine(" - HashCompute test MD5 --verbose");
+            Console.WriteLine(" - HashCompute test SHA256 -uvnl");
+            Console.WriteLine(" - HashCompute test --algorithm=SHA1 --unmanaged --nonewline --lowercase");
             Console.WriteLine(" - HashCompute [? | /? | -? | -h | --help | --version]");
             Console.WriteLine();
             Console.WriteLine("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");

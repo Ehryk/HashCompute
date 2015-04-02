@@ -27,6 +27,8 @@ namespace HashCompute
         public bool Unmanaged { get; set; }
         [Option('n', "nonewline", DefaultValue = false, HelpText = "Do not append last new line to output")]
         public bool NoNewLine { get; set; }
+        [Option('l', "lowercase", DefaultValue = false, HelpText = "Display hex in lower case")]
+        public bool LowerCase { get; set; }
 
         [HelpOption]
         public string GetUsage()
