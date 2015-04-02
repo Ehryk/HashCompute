@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace HashCompute
@@ -38,6 +39,14 @@ namespace HashCompute
         public static bool EqualsIgnoreCase(this string input, string other, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
         {
             return input.Equals(other, comparison);
+        }
+
+        public static string ToAlphanumeric(this string input, bool allowWhiteSpace = false)
+        {
+            if (allowWhiteSpace)
+                return new string(Array.FindAll(input.ToCharArray(), (c => (char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)))));
+            
+            return new string(Array.FindAll(input.ToCharArray(), (c => (char.IsLetterOrDigit(c)))));
         }
     }
 }
