@@ -92,7 +92,7 @@ namespace HashCompute
             return algorithm.ComputeHash(input);
         }
 
-        public static HashAlgorithm GetHashAlgorithm(string algorithm = "SHA512", bool managed = true)
+        public static HashAlgorithm GetHashAlgorithm(string algorithm = "Default", bool managed = true)
         {
             switch (algorithm.ToAlphanumeric().ToUpper())
             {
@@ -115,6 +115,7 @@ namespace HashCompute
 
                 case "MD5":
                 case "MD":
+                case "5":
                     //Unmanaged Only
                     return new MD5CryptoServiceProvider();
 
