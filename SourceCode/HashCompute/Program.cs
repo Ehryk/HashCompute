@@ -33,6 +33,7 @@ namespace HashCompute
                     ShowHelp();
                 else if (options.RickRoll)
                 {
+                    Console.Write("Rick Roll'D!");
                     Process.Start("http://pause.ly/11");
                 }
                 else if (String.IsNullOrEmpty(options.Input) && String.IsNullOrEmpty(stdin))
