@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -30,7 +31,11 @@ namespace HashCompute
                     Console.Write("HashCompute.exe v{0}.{1}", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
                 else if (options.Help || args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
                     ShowHelp();
-                else if (options.Input == null && String.IsNullOrEmpty(stdin))
+                else if (options.RickRoll)
+                {
+                    Process.Start("http://pause.ly/11");
+                }
+                else if (String.IsNullOrEmpty(options.Input) && String.IsNullOrEmpty(stdin))
                 {
                     if (Color)
                         Console.ForegroundColor = ConsoleColor.Red;

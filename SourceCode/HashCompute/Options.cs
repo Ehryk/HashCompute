@@ -29,6 +29,8 @@ namespace HashCompute
         public bool Color { get; set; }
         [Option('x', "omit0x", DefaultValue = false, HelpText = "Omit 0x Hex Specifier")]
         public bool Omit0x { get; set; }
+        [Option('r', "rickroll", DefaultValue = false, HelpText = "Undocumented Feature!!!")]
+        public bool RickRoll { get; set; }
 
         //[HelpOption]
         public string GetUsage()
