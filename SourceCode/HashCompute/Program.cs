@@ -15,6 +15,8 @@ namespace HashCompute
 
         public static void Main(string[] args)
         {
+            string stdin = GetStdInput();
+
             var options = new Options();
             if (CommandLine.Parser.Default.ParseArguments(args, options))
             {
@@ -28,23 +30,43 @@ namespace HashCompute
                     Console.Write("HashCompute.exe v{0}.{1}", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
                 else if (options.Help || args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
                     ShowHelp();
+                else if (options.Input == null && String.IsNullOrEmpty(stdin))
+                {
+                    if (Color)
+                        Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("No input provided.");
+                    Console.ResetColor();
+
+                    ShowHelp();
+                }
                 else
-                    ComputeHash(options.Input, options.Algorithm);
+                    ComputeHash(options.Input ?? stdin, options.Algorithm);
 
                 if (!options.NoNewLine)
                     Console.WriteLine();
             }
             else
             {
-                if (Color)
-                    Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Unknown Arguments: {0}", String.Join(" ", args));
-                Console.ResetColor();
+                if (args.Length > 0 && !args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
+                {
+                    if (Color)
+                        Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Unknown Arguments: {0}", String.Join(" ", args));
+                    Console.ResetColor();
+                }
 
                 ShowHelp();
             }
 
             Console.ResetColor();
+        }
+
+        public static string GetStdInput()
+        {
+            if (Console.IsInputRedirected)
+                return Console.In.ReadToEnd().Trim();
+
+            return null;
         }
 
         public static void ComputeHash(string input, string algorithm = null)
@@ -144,10 +166,19 @@ namespace HashCompute
             Console.WriteLine("Usage and Examples: ");
             Console.WriteLine(" - HashCompute (Input) [Algorithm] [Options]");
             Console.WriteLine(" - HashCompute test");
-            Console.WriteLine(" - HashCompute test MD5 --verbose --color=false");
-            Console.WriteLine(" - HashCompute test SHA256 -uvnl");
-            Console.WriteLine(" - HashCompute test --algorithm=SHA1 --unmanaged --nonewline --lowercase");
+            Console.WriteLine(" - echo|set /P=test | HashCompute");
+            Console.WriteLine(" - HashCompute -itest -aMD5 --verbose --color");
+            Console.WriteLine(" - HashCompute test SHA256 -uvnlx");
+            Console.WriteLine(" - HashCompute --input=test --algorithm=SHA1 --unmanaged --nonewline --lowercase");
             Console.WriteLine(" - HashCompute [? | /? | -? | -h | --help | --version]");
+            Console.WriteLine();
+            Console.WriteLine("Options");
+            Console.WriteLine(" - -v/--verbose   : Add additional output");
+            Console.WriteLine(" - -n/--nonewline : Output without trailing newline");
+            Console.WriteLine(" - -l/--lowercase : Output hex with lowercase");
+            Console.WriteLine(" - -x/--omit0x    : Omit 0x prefix from hex output");
+            Console.WriteLine(" - -u/--unmanaged : Use unmanaged algorithm, if available");
+            Console.WriteLine(" - -c/--color     : Disable colored output");
             Console.WriteLine();
             Console.WriteLine("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
         }

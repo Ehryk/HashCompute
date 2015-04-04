@@ -1,4 +1,4 @@
-HashCompute v1.2
+HashCompute v1.3
 ================
 
 This Windows console application will return the hashed output of the first parameter (currently only C# System.Cryptography classes supported). This is SHA512 by default and uses a Managed implementation when possible (unless `-u` or `--unmanaged` is specified). Other hash algorithms selectable are SHA1, SHA256, SHA384, MD5 and RIPEMD, passed by name as the second parameter (optional) or anywhere in the command line with `-a=` or `--algorithm=`.
@@ -11,6 +11,7 @@ Usage:
 ---
  - ``HashCompute test``
  - ``HashCompute.exe (input) [Algorithm] [Options]``
+ - ``echo "Things" | HashCompute.exe [Algorithm] [Options]``
  - ``HashCompute [-h | --help | /? | -? | --? | ?]``
  - ``HashCompute --version``
  - ``Options:``
@@ -24,12 +25,14 @@ Usage:
 
 Latest Changes:
 ---
+ - Added support for redirection/piping (Stdin)
  - Added various options and using NuGet packages
  - Added all C# System.Cryptography hash algorithms
 
 Release History:
 ---
- - v1.2 (In Development)
+ - v1.3 (In Development)
+ - v1.2 2015.04.04 Added support for redirection/piping (Stdin)
  - v1.1 2015.04.02 Added command line options, NuGet packages
  - v1.0 2015.04.01 Initial Release, handling multiple hash algorithms
 

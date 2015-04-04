@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CommandLine;
+﻿using CommandLine;
 using CommandLine.Text;
 
 namespace HashCompute
@@ -11,6 +6,7 @@ namespace HashCompute
     public class Options
     {
         [ValueOption(0)]
+        [Option('i', "input", DefaultValue = null, Required = false, HelpText = "Input")]
         public string Input { get; set; }
 
         [ValueOption(1)]
