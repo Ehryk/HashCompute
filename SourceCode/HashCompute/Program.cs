@@ -31,8 +31,19 @@ namespace HashCompute
                     Color = !options.NoColor;
                     Omit0x = options.Omit0x;
 
-                    string input = options.Input ?? stdin;
-                    HashAlgorithm ha = Hash.GetHashAlgorithm(options.Algorithm, !options.Unmanaged);
+                    string input = stdin ?? options.Input;
+                    string algorithm = options.Algorithm;
+                    if (!String.IsNullOrEmpty(stdin) && !String.IsNullOrEmpty(options.Input))
+                    {
+                        //Both Provided; is arg[0] (Input) an algorithm?
+                        try
+                        {
+                            Hash.GetHashAlgorithm(options.Input, !options.Unmanaged);
+                            algorithm = options.Input;
+                        }
+                        catch (NotSupportedException ex) { }
+                    }
+                    HashAlgorithm ha = Hash.GetHashAlgorithm(algorithm, !options.Unmanaged);
 
                     if (options.Version)
                         Console.Write("{0} v{1}.{2}.{3}.{4} ({5})", ApplicationInfo.Title, ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor, ApplicationInfo.Version.Build, ApplicationInfo.Version.Revision, ApplicationInfo.CopyrightHolder);
@@ -115,7 +126,7 @@ namespace HashCompute
                     else
                     {
                         //String Input
-                        byte[] hash = Hash.GetHash(input, options.Algorithm);
+                        byte[] hash = Hash.GetHash(input, ha);
 
                         if (options.Verbose)
                         {
@@ -145,20 +156,23 @@ namespace HashCompute
                 {
                     if (args.Length > 0 && !args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
                     {
-                        if (options.NoColor)
+                        if (Color)
                             Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Unknown Arguments: {0}", String.Join(" ", args));
                         Console.ResetColor();
                     }
 
                     ShowHelp();
+
+                    Console.WriteLine();
                 }
             }
             catch (Exception ex)
             {
                 if (Color)
                     Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
+                Console.WriteLine();
+                Console.WriteLine("{0}: {1}", ex.GetType().Name, ex.Message);
             }
 
             Console.ResetColor();
@@ -179,8 +193,8 @@ namespace HashCompute
                 Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(" === HashCompute v{0}.{1} ===", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
             Console.ResetColor();
-            Console.WriteLine("Computes the hash of the terminal input (as a UTF-8 String)");
-            Console.WriteLine("Defaults to SHA512.");
+            Console.WriteLine("Computes the hash of input from the terminal (stdin or first argument)");
+            Console.WriteLine("Multiple algorithms available, defaults to SHA512.");
             Console.WriteLine();
             Console.WriteLine("Usage and Examples: ");
             Console.WriteLine(" - HashCompute (Input) [Algorithm] [Options]");
