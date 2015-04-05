@@ -3,12 +3,19 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 
 namespace HashCompute
 {
     class Program
     {
+        public const int SUCCESS = 0;
+        public const int FAILURE_UNSPECIFIED = 10;
+        public const int FAILURE_EXCEPTION = 20;
+        public const int FAILURE_NO_INPUT = 30;
+        public const int FAILURE_ARGUMENTS = 40;
+
         public static bool Verbose = false;
         public static bool Managed = true;
         public static bool UpperCase = false;
@@ -16,8 +23,10 @@ namespace HashCompute
         public static bool Omit0x = false;
         public static bool FileMode = false;
 
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
+            int retCode = FAILURE_UNSPECIFIED;
+
             try
             {
                 string stdin = GetStdInput();
@@ -35,7 +44,7 @@ namespace HashCompute
                     string algorithm = options.Algorithm;
                     if (!String.IsNullOrEmpty(stdin) && !String.IsNullOrEmpty(options.Input))
                     {
-                        //Both Provided; is arg[0] (Input) an algorithm?
+                        //Both Provided; is args[0] (Input) an algorithm?
                         try
                         {
                             Hash.GetHashAlgorithm(options.Input, !options.Unmanaged);
@@ -46,25 +55,40 @@ namespace HashCompute
                     HashAlgorithm ha = Hash.GetHashAlgorithm(algorithm, !options.Unmanaged);
 
                     if (options.Version)
+                    {
+                        //Show Version Information and exit
                         Console.Write("{0} v{1}.{2}.{3}.{4} ({5})", ApplicationInfo.Title, ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor, ApplicationInfo.Version.Build, ApplicationInfo.Version.Revision, ApplicationInfo.CopyrightHolder);
+                        retCode = SUCCESS;
+                    }
                     else if (options.Help || args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
+                    {
+                        //Show Usage/Help and exit
                         ShowHelp();
+                        retCode = SUCCESS;
+                    }
                     else if (options.RickRoll)
                     {
+                        //Easter Egg!
                         Console.Write("Rick Roll'D!");
                         Process.Start("http://pause.ly/11");
+
+                        retCode = SUCCESS;
                     }
                     else if (String.IsNullOrEmpty(input))
                     {
+                        //No Input Provided - nothing to do
                         if (Color)
                             Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("No input provided.");
                         Console.ResetColor();
 
                         ShowHelp();
+
+                        retCode = FAILURE_NO_INPUT;
                     }
                     else if (options.FileMode)
                     {
+                        //Interpret input as file(s)
                         string[] filePaths = input.Split(new[] {"\r\n", "\n", ";", ","}, StringSplitOptions.RemoveEmptyEntries);
                         int index = 0;
                         int elements = filePaths.Length;
@@ -122,10 +146,12 @@ namespace HashCompute
                             index++;
                             Console.ResetColor();
                         }
+
+                        retCode = SUCCESS;
                     }
                     else
                     {
-                        //String Input
+                        //Interpret the input as a (UTF8) String
                         byte[] hash = Hash.GetHash(input, ha);
 
                         if (options.Verbose)
@@ -147,6 +173,8 @@ namespace HashCompute
                             else
                                 Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
                         }
+
+                        retCode = SUCCESS;
                     }
 
                     if (!options.NoNewLine)
@@ -154,6 +182,7 @@ namespace HashCompute
                 }
                 else
                 {
+                    //Failed Parsing Command Line Options
                     if (args.Length > 0 && !args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
                     {
                         if (Color)
@@ -165,17 +194,21 @@ namespace HashCompute
                     ShowHelp();
 
                     Console.WriteLine();
+                    retCode = FAILURE_ARGUMENTS;
                 }
             }
             catch (Exception ex)
             {
+                //Display Exception Message
                 if (Color)
                     Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine();
                 Console.WriteLine("{0}: {1}", ex.GetType().Name, ex.Message);
+                retCode = FAILURE_EXCEPTION;
             }
 
             Console.ResetColor();
+            return retCode;
         }
 
         public static string GetStdInput()
