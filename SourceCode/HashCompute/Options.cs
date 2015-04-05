@@ -19,6 +19,8 @@ namespace HashCompute
         public bool Verbose { get; set; }
         [Option("version", DefaultValue = false, HelpText = "Print Version and Exit")]
         public bool Version { get; set; }
+        [Option('f', "filemode", DefaultValue = false, HelpText = "Interpret input as filename(s)")]
+        public bool FileMode { get; set; }
         [Option('u', "unmanaged", DefaultValue = false, HelpText = "Use Unmanaged Hash Algorithms")]
         public bool Unmanaged { get; set; }
         [Option('n', "nonewline", DefaultValue = false, HelpText = "Do not append last new line to output")]
@@ -26,7 +28,9 @@ namespace HashCompute
         [Option('l', "lowercase", DefaultValue = false, HelpText = "Display hex in lower case")]
         public bool LowerCase { get; set; }
         [Option('c', "color", DefaultValue = false, HelpText = "Disable colored output")]
-        public bool Color { get; set; }
+        public bool NoColor { get; set; }
+        [Option('8', "utf8", DefaultValue = false, HelpText = "Show UTF-8 Representation")]
+        public bool ShowUTF8 { get; set; }
         [Option('x', "omit0x", DefaultValue = false, HelpText = "Omit 0x Hex Specifier")]
         public bool Omit0x { get; set; }
         [Option('r', "rickroll", DefaultValue = false, HelpText = "Undocumented Feature!!!")]

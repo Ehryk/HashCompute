@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,55 +14,140 @@ namespace HashCompute
         public static bool UpperCase = false;
         public static bool Color = true;
         public static bool Omit0x = false;
+        public static bool FileMode = false;
 
         public static void Main(string[] args)
         {
-            string stdin = GetStdInput();
-
-            var options = new Options();
-            if (CommandLine.Parser.Default.ParseArguments(args, options))
+            try
             {
-                Verbose = options.Verbose;
-                Managed = !options.Unmanaged;
-                UpperCase = !options.LowerCase;
-                Color = !options.Color;
-                Omit0x = options.Omit0x;
+                string stdin = GetStdInput();
 
-                if (options.Version)
-                    Console.Write("HashCompute.exe v{0}.{1}", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
-                else if (options.Help || args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
-                    ShowHelp();
-                else if (options.RickRoll)
+                var options = new Options();
+                if (CommandLine.Parser.Default.ParseArguments(args, options))
                 {
-                    Console.Write("Rick Roll'D!");
-                    Process.Start("http://pause.ly/11");
-                }
-                else if (String.IsNullOrEmpty(options.Input) && String.IsNullOrEmpty(stdin))
-                {
-                    if (Color)
-                        Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("No input provided.");
-                    Console.ResetColor();
+                    Verbose = options.Verbose;
+                    Managed = !options.Unmanaged;
+                    UpperCase = !options.LowerCase;
+                    Color = !options.NoColor;
+                    Omit0x = options.Omit0x;
 
-                    ShowHelp();
+                    string input = options.Input ?? stdin;
+                    HashAlgorithm ha = GetHashAlgorithm(options.Algorithm, !options.Unmanaged);
+
+                    if (options.Version)
+                        Console.Write("HashCompute.exe v{0}.{1}", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
+                    else if (options.Help || args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
+                        ShowHelp();
+                    else if (options.RickRoll)
+                    {
+                        Console.Write("Rick Roll'D!");
+                        Process.Start("http://pause.ly/11");
+                    }
+                    else if (String.IsNullOrEmpty(input))
+                    {
+                        if (Color)
+                            Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("No input provided.");
+                        Console.ResetColor();
+
+                        ShowHelp();
+                    }
+                    else if (options.FileMode)
+                    {
+                        string[] filePaths = input.Split(new[] {"\r\n", "\n"}, StringSplitOptions.RemoveEmptyEntries);
+
+                        foreach (var filePath in filePaths)
+                        {
+                            //File Input
+                            try
+                            {
+                                if (File.Exists(filePath))
+                                {
+                                    byte[] fileContents = File.ReadAllBytes(filePath);
+                                    byte[] hash = GetHash(fileContents, ha);
+
+                                    if (Verbose)
+                                    {
+                                        Console.WriteLine("Input: ->{0}", Path.GetFullPath(filePath));
+                                        Console.WriteLine("Hash : {0}", ha.GetType().Name);
+                                        if (options.ShowUTF8)
+                                            Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
+                                        if (Color)
+                                            Console.ForegroundColor = ConsoleColor.White;
+                                        Console.Write("Hex  : {0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
+                                    }
+                                    else
+                                    {
+                                        if (Color)
+                                            Console.ForegroundColor = ConsoleColor.White;
+                                        Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
+                                    }
+
+                                    if (Array.IndexOf(filePaths, filePath) != filePaths.Length - 1)
+                                        Console.WriteLine();
+                                }
+                                else
+                                {
+                                    if (Color)
+                                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                                    Console.Write("File {0} does not exist or is inaccessible.", filePath);
+
+                                    if (Array.IndexOf(filePaths, filePath) != filePaths.Length - 1)
+                                        Console.WriteLine();
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                if (Color)
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //String Input
+                        byte[] hash = GetHash(input, options.Algorithm);
+
+                        if (options.Verbose)
+                        {
+                            Console.WriteLine("Input: {0}", input);
+                            Console.WriteLine("Hash : {0}", ha.GetType().Name);
+                            if (options.ShowUTF8)
+                                Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
+                            if (Color)
+                                Console.ForegroundColor = ConsoleColor.White;
+                            Console.Write("Hex  : {0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
+                        }
+                        else
+                        {
+                            if (Color)
+                                Console.ForegroundColor = ConsoleColor.White;
+                            Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
+                        }
+                    }
+
+                    if (!options.NoNewLine)
+                        Console.WriteLine();
                 }
                 else
-                    ComputeHash(options.Input ?? stdin, options.Algorithm);
-
-                if (!options.NoNewLine)
-                    Console.WriteLine();
-            }
-            else
-            {
-                if (args.Length > 0 && !args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
                 {
-                    if (Color)
-                        Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Unknown Arguments: {0}", String.Join(" ", args));
-                    Console.ResetColor();
-                }
+                    if (args.Length > 0 && !args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
+                    {
+                        if (options.NoColor)
+                            Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Unknown Arguments: {0}", String.Join(" ", args));
+                        Console.ResetColor();
+                    }
 
-                ShowHelp();
+                    ShowHelp();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Color)
+                    Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
             }
 
             Console.ResetColor();
@@ -75,28 +161,13 @@ namespace HashCompute
             return null;
         }
 
-        public static void ComputeHash(string input, string algorithm = null)
+        public static byte[] GetHash(string input, string algorithm = null)
         {
             try
             {
                 HashAlgorithm ha = GetHashAlgorithm(algorithm ?? "Default", Managed);
                 byte[] hash = GetHash(input, ha);
-
-                if (Verbose)
-                {
-                    Console.WriteLine("Input: {0}", input);
-                    Console.WriteLine("Hash : {0}", ha.GetType().Name);
-                    Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
-                    if (Color)
-                        Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("Hex  : {0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
-                }
-                else
-                {
-                    if (Color)
-                        Console.ForegroundColor = ConsoleColor.White;
-                    Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
-                }
+                return hash;
             }
             catch (Exception ex)
             {
@@ -104,6 +175,7 @@ namespace HashCompute
                     Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
             }
+            return null;
         }
 
         public static byte[] GetHash(string input, HashAlgorithm algorithm = null, Encoding encoding = null)
