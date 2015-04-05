@@ -25,7 +25,7 @@ namespace HashCompute
         }
 
         /// <summary>
-        /// Convert Hash bytes to Hexadecimal String format 
+        /// Convert Hash bytes to Hexadecimal String format. Defaults to UTF8 Encoding.
         /// </summary>
         public static byte[] ToBytes(this string input, Encoding encoding = null)
         {

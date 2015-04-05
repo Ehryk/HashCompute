@@ -32,10 +32,10 @@ namespace HashCompute
                     Omit0x = options.Omit0x;
 
                     string input = options.Input ?? stdin;
-                    HashAlgorithm ha = GetHashAlgorithm(options.Algorithm, !options.Unmanaged);
+                    HashAlgorithm ha = Hash.GetHashAlgorithm(options.Algorithm, !options.Unmanaged);
 
                     if (options.Version)
-                        Console.Write("HashCompute.exe v{0}.{1}", ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor);
+                        Console.Write("{0} v{1}.{2}.{3}.{4} ({5})", ApplicationInfo.Title, ApplicationInfo.Version.Major, ApplicationInfo.Version.Minor, ApplicationInfo.Version.Build, ApplicationInfo.Version.Revision, ApplicationInfo.CopyrightHolder);
                     else if (options.Help || args.Any(a => a.Equals("?") || a.Equals("-?") || a.Equals("/?") || a.Equals("--?")))
                         ShowHelp();
                     else if (options.RickRoll)
@@ -66,7 +66,7 @@ namespace HashCompute
                                 if (File.Exists(filePath))
                                 {
                                     byte[] fileContents = File.ReadAllBytes(filePath);
-                                    byte[] hash = GetHash(fileContents, ha);
+                                    byte[] hash = Hash.GetHash(fileContents, ha);
 
                                     if (Verbose)
                                     {
@@ -115,7 +115,7 @@ namespace HashCompute
                     else
                     {
                         //String Input
-                        byte[] hash = GetHash(input, options.Algorithm);
+                        byte[] hash = Hash.GetHash(input, options.Algorithm);
 
                         if (options.Verbose)
                         {
@@ -172,76 +172,6 @@ namespace HashCompute
             return null;
         }
 
-        public static byte[] GetHash(string input, string algorithm = null)
-        {
-            try
-            {
-                HashAlgorithm ha = GetHashAlgorithm(algorithm ?? "Default", Managed);
-                byte[] hash = GetHash(input, ha);
-                return hash;
-            }
-            catch (Exception ex)
-            {
-                if (Color)
-                    Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
-            }
-            return null;
-        }
-
-        public static byte[] GetHash(string input, HashAlgorithm algorithm = null, Encoding encoding = null)
-        {
-            algorithm = algorithm ?? new SHA512Managed();
-
-            return algorithm.ComputeHash(input.ToBytes(encoding));
-        }
-
-        public static byte[] GetHash(byte[] input, HashAlgorithm algorithm = null)
-        {
-            algorithm = algorithm ?? new SHA512Managed();
-
-            return algorithm.ComputeHash(input);
-        }
-
-        public static HashAlgorithm GetHashAlgorithm(string algorithm = "Default", bool managed = true)
-        {
-            switch (algorithm.ToAlphanumeric().ToUpper())
-            {
-                case "SHA512":
-                case "512":
-                case "DEFAULT":
-                    return managed ? (HashAlgorithm)new SHA512Managed() : new SHA512CryptoServiceProvider();
-
-                case "SHA256":
-                case "256":
-                    return managed ? (HashAlgorithm)new SHA256Managed() : new SHA256CryptoServiceProvider();
-
-                case "SHA384":
-                case "384":
-                    return managed ? (HashAlgorithm)new SHA384Managed() : new SHA384CryptoServiceProvider();
-
-                case "SHA1":
-                case "1":
-                    return managed ? (HashAlgorithm)new SHA1Managed() : new SHA1CryptoServiceProvider();
-
-                case "MD5":
-                case "MD":
-                case "5":
-                    //Unmanaged Only
-                    return new MD5CryptoServiceProvider();
-
-                case "RIPEMD":
-                case "RIP":
-                case "EMD":
-                case "160":
-                    //Managed Only
-                    return new RIPEMD160Managed();
-
-                default:
-                    throw new NotSupportedException(String.Format("Unsupported Hash Algorithm ({0})", algorithm));
-            }
-        }
-
         public static void ShowHelp()
         {
             Console.WriteLine();
@@ -272,7 +202,7 @@ namespace HashCompute
             Console.WriteLine(" - -8/--utf8      : Print the UTF-8 string of the hash");
             Console.WriteLine(" - -c/--color     : Disable colored output");
             Console.WriteLine();
-            Console.WriteLine("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
+            Console.Write("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
         }
     }
 }
