@@ -54,7 +54,9 @@ namespace HashCompute
                     }
                     else if (options.FileMode)
                     {
-                        string[] filePaths = input.Split(new[] {"\r\n", "\n"}, StringSplitOptions.RemoveEmptyEntries);
+                        string[] filePaths = input.Split(new[] {"\r\n", "\n", ";", ","}, StringSplitOptions.RemoveEmptyEntries);
+                        int index = 0;
+                        int elements = filePaths.Length;
 
                         foreach (var filePath in filePaths)
                         {
@@ -68,7 +70,7 @@ namespace HashCompute
 
                                     if (Verbose)
                                     {
-                                        Console.WriteLine("Input: ->{0}", Path.GetFullPath(filePath));
+                                        Console.WriteLine("Input> {0}", Path.GetFullPath(filePath));
                                         Console.WriteLine("Hash : {0}", ha.GetType().Name);
                                         if (options.ShowUTF8)
                                             Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
@@ -80,10 +82,13 @@ namespace HashCompute
                                     {
                                         if (Color)
                                             Console.ForegroundColor = ConsoleColor.White;
-                                        Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
+                                        if (options.ShowUTF8)
+                                            Console.Write("{0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
+                                        else
+                                            Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
                                     }
 
-                                    if (Array.IndexOf(filePaths, filePath) != filePaths.Length - 1)
+                                    if (index != elements - 1)
                                         Console.WriteLine();
                                 }
                                 else
@@ -92,7 +97,7 @@ namespace HashCompute
                                         Console.ForegroundColor = ConsoleColor.DarkYellow;
                                     Console.Write("File {0} does not exist or is inaccessible.", filePath);
 
-                                    if (Array.IndexOf(filePaths, filePath) != filePaths.Length - 1)
+                                    if (index != elements - 1)
                                         Console.WriteLine();
                                 }
                             }
@@ -102,6 +107,9 @@ namespace HashCompute
                                     Console.ForegroundColor = ConsoleColor.Red;
                                 Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
                             }
+
+                            index++;
+                            Console.ResetColor();
                         }
                     }
                     else
@@ -123,7 +131,10 @@ namespace HashCompute
                         {
                             if (Color)
                                 Console.ForegroundColor = ConsoleColor.White;
-                            Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
+                            if (options.ShowUTF8)
+                                Console.Write("{0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
+                            else
+                                Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
                         }
                     }
 
@@ -244,18 +255,21 @@ namespace HashCompute
             Console.WriteLine("Usage and Examples: ");
             Console.WriteLine(" - HashCompute (Input) [Algorithm] [Options]");
             Console.WriteLine(" - HashCompute test");
+            Console.WriteLine(" - HashCompute test sha256 -uvnlx8");
             Console.WriteLine(" - echo|set /P=test | HashCompute");
-            Console.WriteLine(" - HashCompute -itest -aMD5 --verbose --color");
-            Console.WriteLine(" - HashCompute test SHA256 -uvnlx");
+            Console.WriteLine(" - HashCompute.exe \"HashCompute.exe,test;HashCompute.exe\" md5 -f");
+            Console.WriteLine(" - HashCompute -itest -aRIPEMD --verbose --color --utf8");
             Console.WriteLine(" - HashCompute --input=test --algorithm=SHA1 --unmanaged --nonewline --lowercase");
             Console.WriteLine(" - HashCompute [? | /? | -? | -h | --help | --version]");
             Console.WriteLine();
             Console.WriteLine("Options");
+            Console.WriteLine(" - -f/--file      : Interpret input as a (list of) file(s)");
             Console.WriteLine(" - -v/--verbose   : Add additional output");
             Console.WriteLine(" - -n/--nonewline : Output without trailing newline");
             Console.WriteLine(" - -l/--lowercase : Output hex with lowercase");
             Console.WriteLine(" - -x/--omit0x    : Omit 0x prefix from hex output");
             Console.WriteLine(" - -u/--unmanaged : Use unmanaged algorithm, if available");
+            Console.WriteLine(" - -8/--utf8      : Print the UTF-8 string of the hash");
             Console.WriteLine(" - -c/--color     : Disable colored output");
             Console.WriteLine();
             Console.WriteLine("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");

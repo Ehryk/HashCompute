@@ -19,7 +19,7 @@ namespace HashCompute
         public bool Verbose { get; set; }
         [Option("version", DefaultValue = false, HelpText = "Print Version and Exit")]
         public bool Version { get; set; }
-        [Option('f', "filemode", DefaultValue = false, HelpText = "Interpret input as filename(s)")]
+        [Option('f', "file", DefaultValue = false, HelpText = "Interpret input as filename(s)")]
         public bool FileMode { get; set; }
         [Option('u', "unmanaged", DefaultValue = false, HelpText = "Use Unmanaged Hash Algorithms")]
         public bool Unmanaged { get; set; }
