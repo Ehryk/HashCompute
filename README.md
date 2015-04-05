@@ -5,7 +5,7 @@ This Windows console application will return the hashed output of the first para
 
 Pre-built binaries are in the /Builds folder. HashCompute.exe will be the last (potentially Development) build that was committed with the most features, HashCompute_vX.Y.exe will be the last release build for that Major and Minor version.
 
-![Usage in cmd](https://raw.githubusercontent.com/Ehryk/HashCompute/master/Documentation/Images/cmdUsage.png)
+![Usage in cmd](https://raw.githubusercontent.com/Ehryk/HashCompute/master/Documentation/Images/cmdUsage2.png)
 
 Usage:
 ---
