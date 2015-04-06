@@ -10,17 +10,21 @@ Pre-built binaries are in the /Builds folder. HashCompute.exe will be the last (
 Usage:
 ---
  - ``HashCompute test``
- - ``HashCompute.exe (input) [Algorithm] [Options]``
- - ``echo | set /P=test | HashCompute.exe [Algorithm] [Options]``
+ - ``HashCompute.exe (input) [Algorithm] [Encoding] [Options]``
+ - ``echo | set /P=test | HashCompute.exe [Algorithm] [Encoding] [Options]``
  - ``HashCompute File1,File2 -f``
  - ``HashCompute [-h | --help | /? | -? | --? | ?]``
  - ``HashCompute --version``
  - ``Options:``
+   - ``-a, --algorithm: Desired hash algorithm``
+   - ``-e, --encoding: Desired encoding (UTF7,8,16,32), Defaults to system encoding``
    - ``-v, --verbose: Adds additional output``
    - ``-n, --nonewline: Removes trailing newline similar to echo -n``
    - ``-f, --file: Interpret the input as file(s), delimited by newlines, commas, or semicolons``
+   - ``-t, --text: Same as -f but read the file content as text``
    - ``-u, --unmanaged: Uses unmanaged hash implementation, if available``
    - ``-l, --lowercase: Displays hash hex in lowercase (0dc3... instead of 0DC3...)``
+   - ``-b, --big-endian: Interprets Input or Text contents with the big-endian of the selected encoding (multibyte encodings only)``
    - ``-c, --color: Disables Colored Output``
    - ``-x, --omit0x: Disables 0x hex specifier (NNN instead of 0xNNN...)``
    - ``-8, --utf8: Print UTF8 of hash to console (in addition with -v, otherwise in place of)``
@@ -28,6 +32,7 @@ Usage:
 
 Latest Changes:
 ---
+ - Added text mode for hashing the contents of files as strings, various encodings
  - Added file mode for hashing the contents of files
  - Added support for redirection/piping (Stdin)
  - Added various options and using NuGet packages
@@ -35,7 +40,7 @@ Latest Changes:
 
 Release History:
 ---
- - v1.4 (In Development)
+ - v1.4 2015.04.06 Added support for various encodings, text mode
  - v1.3 2015.04.05 Added support for hashing file contents
  - v1.2 2015.04.04 Added support for redirection/piping (Stdin)
  - v1.1 2015.04.02 Added command line options, NuGet packages

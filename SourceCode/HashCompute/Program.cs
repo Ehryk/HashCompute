@@ -53,6 +53,33 @@ namespace HashCompute
                         catch (NotSupportedException ex) { }
                     }
                     HashAlgorithm ha = Hash.GetHashAlgorithm(algorithm, !options.Unmanaged);
+                    string encoding = options.Encoding;
+                    if (encoding == Options.Default.Encoding)
+                    {
+                        if (!String.IsNullOrEmpty(stdin) && !String.IsNullOrEmpty(options.Input))
+                        {
+                            //Both Provided; is args[0] (Input) an encoding?
+                            try
+                            {
+                                Encode.GetEncoding(options.Input, !options.BigEndian);
+                                encoding = options.Input;
+                            }
+                            catch (NotSupportedException) { }
+                        }
+                        //Is args[1] (Algorithm) an encoding?
+                        if (algorithm != Options.Default.Algorithm)
+                        {
+                            try
+                            {
+                                Encode.GetEncoding(options.Algorithm, !options.BigEndian);
+                                encoding = options.Algorithm;
+                            }
+                            catch (NotSupportedException) { }
+                        }
+                    }
+                    Encoding enc = Encode.GetEncoding(encoding, !options.BigEndian);
+                    options.Algorithm = algorithm;
+                    options.Encoding = encoding;
 
                     if (options.Version)
                     {
@@ -86,7 +113,7 @@ namespace HashCompute
 
                         retCode = FAILURE_NO_INPUT;
                     }
-                    else if (options.FileMode)
+                    else if (options.FileMode || options.TextMode)
                     {
                         //Interpret input as file(s)
                         string[] filePaths = input.Split(new[] {"\r\n", "\n", ";", ","}, StringSplitOptions.RemoveEmptyEntries);
@@ -100,8 +127,18 @@ namespace HashCompute
                             {
                                 if (File.Exists(filePath))
                                 {
-                                    byte[] fileContents = File.ReadAllBytes(filePath);
-                                    byte[] hash = Hash.GetHash(fileContents, ha);
+                                    byte[] hash;
+
+                                    if (options.TextMode)
+                                    {
+                                        string fileContents = File.ReadAllText(filePath, enc);
+                                        hash = Hash.GetHash(fileContents, ha, enc);
+                                    }
+                                    else
+                                    {
+                                        byte[] fileContents = File.ReadAllBytes(filePath);
+                                        hash = Hash.GetHash(fileContents, ha);
+                                    }
 
                                     if (Verbose)
                                     {
@@ -109,6 +146,8 @@ namespace HashCompute
                                         Console.WriteLine("Hash : {0}", ha.GetType().Name);
                                         if (options.ShowUTF8)
                                             Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
+                                        else if (options.Encoding != Options.Default.Encoding)
+                                            Console.WriteLine("{0} : {1}", enc.EncodingName, enc.GetString(hash).Replace("\r", "").Replace("\n", ""));
                                         if (Color)
                                             Console.ForegroundColor = ConsoleColor.White;
                                         Console.Write("Hex  : {0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
@@ -118,13 +157,10 @@ namespace HashCompute
                                         if (Color)
                                             Console.ForegroundColor = ConsoleColor.White;
                                         if (options.ShowUTF8)
-                                            Console.Write("{0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
+                                            Console.Write("{0} {1}{2}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""), options.TextMode ? " " : "*", filePath);
                                         else
-                                            Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
+                                            Console.Write("{0}{1} {2}{3}", Omit0x ? "" : "0x", hash.GetString(UpperCase), options.TextMode ? " " : "*", filePath);
                                     }
-
-                                    if (index != elements - 1)
-                                        Console.WriteLine();
                                 }
                                 else
                                 {
@@ -143,6 +179,9 @@ namespace HashCompute
                                 Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
                             }
 
+                            if (index != elements - 1)
+                                Console.WriteLine();
+
                             index++;
                             Console.ResetColor();
                         }
@@ -151,8 +190,8 @@ namespace HashCompute
                     }
                     else
                     {
-                        //Interpret the input as a (UTF8) String
-                        byte[] hash = Hash.GetHash(input, ha);
+                        //Interpret the input as a String
+                        byte[] hash = Hash.GetHash(input, ha, enc);
 
                         if (options.Verbose)
                         {
@@ -160,6 +199,8 @@ namespace HashCompute
                             Console.WriteLine("Hash : {0}", ha.GetType().Name);
                             if (options.ShowUTF8)
                                 Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
+                            else if (options.Encoding != Options.Default.Encoding)
+                                Console.WriteLine("{0} : {1}", enc.EncodingName, enc.GetString(hash).Replace("\r", "").Replace("\n", ""));
                             if (Color)
                                 Console.ForegroundColor = ConsoleColor.White;
                             Console.Write("Hex  : {0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
@@ -230,26 +271,31 @@ namespace HashCompute
             Console.WriteLine("Multiple algorithms available, defaults to SHA512.");
             Console.WriteLine();
             Console.WriteLine("Usage and Examples: ");
-            Console.WriteLine(" - HashCompute (Input) [Algorithm] [Options]");
-            Console.WriteLine(" - HashCompute test");
-            Console.WriteLine(" - HashCompute test sha256 -uvnlx8");
-            Console.WriteLine(" - echo|set /P=test | HashCompute");
-            Console.WriteLine(" - HashCompute.exe \"HashCompute.exe,test;HashCompute.exe\" md5 -f");
-            Console.WriteLine(" - HashCompute -itest -aRIPEMD --verbose --color --utf8");
-            Console.WriteLine(" - HashCompute --input=test --algorithm=SHA1 --unmanaged --nonewline --lowercase");
-            Console.WriteLine(" - HashCompute [? | /? | -? | -h | --help | --version]");
+            Console.WriteLine(" > HashCompute (Input) [Algorithm] [Options]");
+            Console.WriteLine(" > HashCompute test");
+            Console.WriteLine(" > HashCompute test sha256 -uvnlx8");
+            Console.WriteLine(" > echo|set /P=test | HashCompute");
+            Console.WriteLine(" > HashCompute.exe \"HashCompute.exe,not_exist;HashCompute.exe\" md5 -ft");
+            Console.WriteLine(" > dir /b | HashCompute.exe --algorithm=md5 --file -xlv");
+            Console.WriteLine(" > HashCompute -itest -aRIPEMD --verbose --color --utf8");
+            Console.WriteLine(" > HashCompute --input=test --algorithm=SHA1 --unmanaged --nonewline --lowercase");
+            Console.WriteLine(" > HashCompute [? | /? | -? | -h | --help | --version]");
             Console.WriteLine();
             Console.WriteLine("Options");
-            Console.WriteLine(" - -f/--file      : Interpret input as a (list of) file(s)");
-            Console.WriteLine(" - -v/--verbose   : Add additional output");
-            Console.WriteLine(" - -n/--nonewline : Output without trailing newline");
-            Console.WriteLine(" - -l/--lowercase : Output hex with lowercase");
-            Console.WriteLine(" - -x/--omit0x    : Omit 0x prefix from hex output");
-            Console.WriteLine(" - -u/--unmanaged : Use unmanaged algorithm, if available");
-            Console.WriteLine(" - -8/--utf8      : Print the UTF-8 string of the hash");
-            Console.WriteLine(" - -c/--color     : Disable colored output");
+            Console.WriteLine(" -f/--file       : Interpret input as a list of file(s) and hash as binary");
+            Console.WriteLine(" -t/--text       : Interpret input as a list of file(s) and hash as text (w/-e)");
+            Console.WriteLine(" -e/--encoding   : Encoding to use (default: SystemDefault)");
+            Console.WriteLine(" -v/--verbose    : Add additional output");
+            Console.WriteLine(" -n/--nonewline  : Output without trailing newline");
+            Console.WriteLine(" -l/--lowercase  : Output hex with lowercase (0DE3 => 0de3)");
+            Console.WriteLine(" -b/--big-endian : Use big-endian version of encoding (multi-byte encodings only)");
+            Console.WriteLine(" -x/--omit0x     : Omit 0x prefix from hex output");
+            Console.WriteLine(" -u/--unmanaged  : Use unmanaged hash algorithm, if available");
+            Console.WriteLine(" -8/--utf8       : Print the UTF-8 string of the hash");
+            Console.WriteLine(" -c/--color      : Disable colored output");
             Console.WriteLine();
-            Console.Write("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
+            Console.WriteLine("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
+            Console.Write("Supported Encodings: Default, ASCII, UTF7, UTF8, UTF16/Unicode (-b), UTF32 (-b)");
         }
     }
 }

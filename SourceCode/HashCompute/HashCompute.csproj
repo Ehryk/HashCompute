@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationInfo.cs" />
+    <Compile Include="Encode.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Hash.cs" />
     <Compile Include="Options.cs" />
