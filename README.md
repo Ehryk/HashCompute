@@ -27,6 +27,7 @@ Usage:
    - ``-b, --big-endian: Interprets Input or Text contents with the big-endian of the selected encoding (multibyte encodings only)``
    - ``-c, --color: Disables Colored Output``
    - ``-x, --omit0x: Disables 0x hex specifier (NNN instead of 0xNNN...)``
+   - ``-s, --hash-only: Disables filename output with hashes``
    - ``-8, --utf8: Print UTF8 of hash to console (in addition with -v, otherwise in place of)``
  - ``Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD``
 

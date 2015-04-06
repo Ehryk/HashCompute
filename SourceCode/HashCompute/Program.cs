@@ -158,6 +158,8 @@ namespace HashCompute
                                             Console.ForegroundColor = ConsoleColor.White;
                                         if (options.ShowUTF8)
                                             Console.Write("{0} {1}{2}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""), options.TextMode ? " " : "*", filePath);
+                                        if (options.HashOnly)
+                                            Console.Write("{0}{1}", Omit0x ? "" : "0x", hash.GetString(UpperCase));
                                         else
                                             Console.Write("{0}{1} {2}{3}", Omit0x ? "" : "0x", hash.GetString(UpperCase), options.TextMode ? " " : "*", filePath);
                                     }
@@ -290,6 +292,7 @@ namespace HashCompute
             Console.WriteLine(" -l/--lowercase  : Output hex with lowercase (0DE3 => 0de3)");
             Console.WriteLine(" -b/--big-endian : Use big-endian version of encoding (multi-byte encodings only)");
             Console.WriteLine(" -x/--omit0x     : Omit 0x prefix from hex output");
+            Console.WriteLine(" -s/--hash-only  : Omit filenames from hash output");
             Console.WriteLine(" -u/--unmanaged  : Use unmanaged hash algorithm, if available");
             Console.WriteLine(" -8/--utf8       : Print the UTF-8 string of the hash");
             Console.WriteLine(" -c/--color      : Disable colored output");

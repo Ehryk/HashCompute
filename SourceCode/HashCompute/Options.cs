@@ -41,6 +41,8 @@ namespace HashCompute
         public bool ShowUTF8 { get; set; }
         [Option('x', "omit0x", DefaultValue = false, HelpText = "Omit 0x Hex Specifier")]
         public bool Omit0x { get; set; }
+        [Option('s', "hash", DefaultValue = false, HelpText = "Omit filenames from hash output")]
+        public bool HashOnly { get; set; }
         [Option('r', "rickroll", DefaultValue = false, HelpText = "Undocumented Feature!!!")]
         public bool RickRoll { get; set; }
 
