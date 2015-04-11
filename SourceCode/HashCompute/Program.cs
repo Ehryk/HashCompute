@@ -61,7 +61,7 @@ namespace HashCompute
                             //Both Provided; is args[0] (Input) an encoding?
                             try
                             {
-                                Encode.GetEncoding(options.Input, !options.BigEndian);
+                                Encodings.GetEncoding(options.Input, !options.BigEndian);
                                 encoding = options.Input;
                             }
                             catch (NotSupportedException) { }
@@ -71,13 +71,13 @@ namespace HashCompute
                         {
                             try
                             {
-                                Encode.GetEncoding(options.Algorithm, !options.BigEndian);
+                                Encodings.GetEncoding(options.Algorithm, !options.BigEndian);
                                 encoding = options.Algorithm;
                             }
                             catch (NotSupportedException) { }
                         }
                     }
-                    Encoding enc = Encode.GetEncoding(encoding, !options.BigEndian);
+                    Encoding enc = Encodings.GetEncoding(encoding, !options.BigEndian);
                     options.Algorithm = algorithm;
                     options.Encoding = encoding;
 

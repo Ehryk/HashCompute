@@ -3,7 +3,7 @@ using System.Text;
 
 namespace HashCompute
 {
-    class Encode
+    class Encodings
     {
         public static Encoding GetEncoding(string encoding = "Default", bool littleEndian = true)
         {

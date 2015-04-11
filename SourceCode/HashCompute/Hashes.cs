@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace HashCompute
 {
-    public static class Hash
+    public static class Hashes
     {
-
         public static byte[] GetHash(string input, string algorithm = null, bool managed = true)
         {
             HashAlgorithm ha = GetHashAlgorithm(algorithm ?? "Default", managed);
