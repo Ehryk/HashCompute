@@ -41,6 +41,9 @@ namespace HashCompute
             return input.Equals(other, comparison);
         }
 
+        /// <summary>
+        /// Remove non-alphanumeric characters from a string (and optionally whitespace as well)
+        /// </summary>
         public static string ToAlphanumeric(this string input, bool allowWhiteSpace = false)
         {
             if (allowWhiteSpace)
