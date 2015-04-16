@@ -132,12 +132,12 @@ namespace HashCompute
                                     if (options.TextMode)
                                     {
                                         string fileContents = File.ReadAllText(filePath, enc);
-                                        hash = Hash.GetHash(fileContents, ha, enc);
+                                        hash = Hashes.GetHash(fileContents, ha, enc);
                                     }
                                     else
                                     {
                                         byte[] fileContents = File.ReadAllBytes(filePath);
-                                        hash = Hash.GetHash(fileContents, ha);
+                                        hash = Hashes.GetHash(fileContents, ha);
                                     }
 
                                     if (Verbose)
