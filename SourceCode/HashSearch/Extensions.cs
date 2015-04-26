@@ -17,7 +17,7 @@ namespace HashSearch
                 throw new ArgumentException("Cannot XOR differing length byte arrays");
 
             int xcount = input.Select((t, i) => t ^ other[i]).Count(xor => xor == 0);
-            return xcount;
+            return xcount - 1;
         }
 
         public static int BitSimilarity(this byte[] input, byte[] other)

@@ -166,7 +166,7 @@ namespace HashSearch
             Console.WriteLine(" -u/--unmanaged  : Use unmanaged hash algorithm, if available");
             Console.WriteLine(" -c/--color      : Disable colored output");
             Console.WriteLine();
-            Console.WriteLine("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
+            Console.Write("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
         }
     }
 }
