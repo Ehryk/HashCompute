@@ -47,12 +47,12 @@ namespace HashCompute
                         //Both Provided; is args[0] (Input) an algorithm?
                         try
                         {
-                            Hash.GetHashAlgorithm(options.Input, !options.Unmanaged);
+                            Hashes.GetHashAlgorithm(options.Input, !options.Unmanaged);
                             algorithm = options.Input;
                         }
                         catch (NotSupportedException ex) { }
                     }
-                    HashAlgorithm ha = Hash.GetHashAlgorithm(algorithm, !options.Unmanaged);
+                    HashAlgorithm ha = Hashes.GetHashAlgorithm(algorithm, !options.Unmanaged);
                     string encoding = options.Encoding;
                     if (encoding == Options.Default.Encoding)
                     {
@@ -193,7 +193,7 @@ namespace HashCompute
                     else
                     {
                         //Interpret the input as a String
-                        byte[] hash = Hash.GetHash(input, ha, enc);
+                        byte[] hash = Hashes.GetHash(input, ha, enc);
 
                         if (options.Verbose)
                         {
