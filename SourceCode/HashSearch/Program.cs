@@ -55,22 +55,43 @@ namespace HashSearch
 
                         byte[] seed = options.Seed.GetBytes();
                         Random random = new Random();
-                        byte[] previous = new byte[ha.HashSize / 8];
-                        byte[] next;
+                        byte[] input = new byte[ha.HashSize / 8];
+                        byte[] result;
                         int similarity;
 
-                        int copyStart = previous.Length - seed.Length;
-                        Buffer.BlockCopy(seed, 0, previous, copyStart, seed.Length);
+                        //Todo: Begin Search in DB
+
+                        int copyStart = input.Length - seed.Length;
+                        Buffer.BlockCopy(seed, 0, input, copyStart, seed.Length);
                         while (true)
                         {
-                            next = ha.ComputeHash(previous);
-                            similarity = next.ByteSimilarity(previous);
+                            result = ha.ComputeHash(input);
 
-                            if (similarity >= options.Threshold)
+                            if (options.ByteSimilarity)
+                                similarity = result.ByteSimilarity(input);
+                            else
+                                similarity = result.BitSimilarity(input);
+
+                            bool fixPoint = input == result;
+                            if (similarity >= options.Threshold || fixPoint)
                             {
-                                Console.WriteLine("Input {0}{1} Has Similarity Index {2}.", Omit0x ? "" : "0x", previous.GetString(UpperCase), similarity);
+                                if (fixPoint)
+                                {
+                                    if (Color)
+                                        Console.ForegroundColor = ConsoleColor.Magenta;
+                                    Console.WriteLine("Fix Point Found!!!");
+                                    Console.ResetColor();
+                                }
+                                Console.WriteLine("Input {0}{1} Has Similarity Index {2}.", Omit0x ? "" : "0x", input.GetString(UpperCase), similarity);
                                 if (Verbose)
-                                    Console.WriteLine("(Hash {0}{1})", Omit0x ? "" : "0x", next.GetString(UpperCase));
+                                    Console.WriteLine("(Hash {0}{1})", Omit0x ? "" : "0x", result.GetString(UpperCase));
+                                if (options.Database)
+                                {
+                                    if (options.ByteSimilarity)
+                                        DataAccess.SimilarityInsert(options.Algorithm, input, result, null, similarity, fixPoint);
+                                    else
+                                        DataAccess.SimilarityInsert(options.Algorithm, input, result, similarity, null, fixPoint);
+                                }
                             }
 
                             if (Console.KeyAvailable)
@@ -80,7 +101,7 @@ namespace HashSearch
                                 {
                                     if (Color)
                                         Console.ForegroundColor = ConsoleColor.Cyan;
-                                    Console.WriteLine("Current Value: {0}{1}", Omit0x ? "" : "0x", previous.GetString(UpperCase));
+                                    Console.WriteLine("Current Value: {0}{1}", Omit0x ? "" : "0x", input.GetString(UpperCase));
                                     Console.ResetColor();
                                 }
                                 if (key.Key == ConsoleKey.P)
@@ -99,12 +120,14 @@ namespace HashSearch
                             }
 
                             if (options.Chase)
-                                previous = next;
+                                input = result;
                             else if (options.Random)
-                                random.NextBytes(previous);
+                                random.NextBytes(input);
                             else //Sequential
-                                previous = previous.AddOne();
+                                input = input.AddOne();
                         }
+
+                        //Todo: End Search in DB
                     }
 
                     if (!options.NoNewLine)

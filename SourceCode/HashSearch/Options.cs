@@ -33,6 +33,10 @@ namespace HashSearch
         public bool NoColor { get; set; }
         [Option('x', "omit0x", DefaultValue = false, HelpText = "Omit 0x Hex Specifier")]
         public bool Omit0x { get; set; }
+        [Option('b', "byte", DefaultValue = false, HelpText = "Use byte similarity instead of bit similarity")]
+        public bool ByteSimilarity { get; set; }
+        [Option('d', "database", DefaultValue = false, HelpText = "Load results to a database")]
+        public bool Database { get; set; }
 
         [Option('e', "chase", DefaultValue = false, HelpText = "Chase Mode")]
         public bool Chase { get; set; }
