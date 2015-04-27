@@ -55,17 +55,21 @@ namespace HashSearch
 
                         byte[] seed = options.Seed.GetBytes();
                         Random random = new Random();
+                        long inputCount = 0;
                         byte[] input = new byte[ha.HashSize / 8];
                         byte[] result;
                         int similarity;
 
-                        //Todo: Begin Search in DB
-
                         int copyStart = input.Length - seed.Length;
                         Buffer.BlockCopy(seed, 0, input, copyStart, seed.Length);
+
+                        string searchMode = GetSearchMode(options);
+                        int searchID = DataAccess.SearchStart(options.Algorithm, Environment.MachineName, searchMode, input);
+
                         while (true)
                         {
                             result = ha.ComputeHash(input);
+                            inputCount++;
 
                             if (options.ByteSimilarity)
                                 similarity = result.ByteSimilarity(input);
@@ -82,6 +86,7 @@ namespace HashSearch
                                     Console.WriteLine("Fix Point Found!!!");
                                     Console.ResetColor();
                                 }
+
                                 Console.WriteLine("Input {0}{1} Has Similarity Index {2}.", Omit0x ? "" : "0x", input.GetString(UpperCase), similarity);
                                 if (Verbose)
                                     Console.WriteLine("(Hash {0}{1})", Omit0x ? "" : "0x", result.GetString(UpperCase));
@@ -91,6 +96,13 @@ namespace HashSearch
                                         DataAccess.SimilarityInsert(options.Algorithm, input, result, null, similarity, fixPoint);
                                     else
                                         DataAccess.SimilarityInsert(options.Algorithm, input, result, similarity, null, fixPoint);
+                                }
+
+                                if (fixPoint && options.Chase)
+                                {
+                                    //Chase Mode has found the Fix Point, and would then loop infinitely
+                                    retCode = SUCCESS;
+                                    break;
                                 }
                             }
 
@@ -124,10 +136,22 @@ namespace HashSearch
                             else if (options.Random)
                                 random.NextBytes(input);
                             else //Sequential
-                                input = input.AddOne();
+                            {
+                                try
+                                {
+                                    input = input.AddOne();
+                                }
+                                catch (OverflowException ex)
+                                {
+                                    //Sequential Mode has overflown; domain exhausted
+                                    retCode = SUCCESS;
+                                    break;
+                                }
+                            }
                         }
 
-                        //Todo: End Search in DB
+                        //End Search in DB
+                        DataAccess.SearchEnd(searchID, inputCount, input);
                     }
 
                     if (!options.NoNewLine)
@@ -162,6 +186,15 @@ namespace HashSearch
 
             Console.ResetColor();
             return retCode;
+        }
+
+        public static string GetSearchMode(Options options)
+        {
+            if (options.Chase)
+                return "Chase";
+            if (options.Random)
+                return "Random";
+            return "Sequential";
         }
 
         public static void ShowHelp()

@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -53,6 +54,38 @@ namespace HashSearch
                 cmd.Parameters.AddWithValue("@ByteSimilarity", byteSimilarity);
             if (fixPoint != null)
                 cmd.Parameters.AddWithValue("@FixPoint", fixPoint);
+
+            return cmd.ExecuteNonQuery() == 1;
+        }
+
+        #endregion
+
+        #region Search Methods
+
+        public static int SearchStart(string pAlgorithmName, string pMachineName, string pSearchMode, byte[] pSeed)
+        {
+            var cmd = new SqlCommand(AppSettings.SP_Search_Start, Connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@AlgorithmName", pAlgorithmName);
+            if (pMachineName != null)
+                cmd.Parameters.AddWithValue("@MachineName", pMachineName);
+            if (pSearchMode != null)
+                cmd.Parameters.AddWithValue("@SearchMode", pSearchMode);
+            if (pSeed != null)
+                cmd.Parameters.AddWithValue("@Seed", pSeed);
+
+            return (int)cmd.ExecuteScalar();
+        }
+
+        public static bool SearchEnd(int pSearchID, long? pInputCount = null, byte[] pLastInput = null)
+        {
+            var cmd = new SqlCommand(AppSettings.SP_Search_End, Connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@SearchID", pSearchID);
+            if (pInputCount != null)
+            cmd.Parameters.AddWithValue("@InputCount", pInputCount);
+            if (pLastInput != null)
+                cmd.Parameters.AddWithValue("@LastInput", pLastInput);
 
             return cmd.ExecuteNonQuery() == 1;
         }

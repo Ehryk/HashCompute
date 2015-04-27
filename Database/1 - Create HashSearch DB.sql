@@ -77,17 +77,30 @@ GO
 
 CREATE TABLE [dbo].[HashSearch]
 (
-	AlgorithmID int PRIMARY KEY IDENTITY(1,1),
+	SearchID int PRIMARY KEY IDENTITY(1,1),
+	AlgorithmID int not null,
 
-	Name nvarchar(100) not null,
-	HashLength int null,
-	TypeName nvarchar(100) null,
+	MachineName nvarchar(100) null,
+	InputCount bigint not null default 0,
+	Seed varbinary(4096) null,
+	SearchMode nvarchar(100) null,
+	LastInput varbinary(4096) null,
+	Completed bit not null default 0,
+	
+	StartTime datetime2 not null default(SYSDATETIME()),
+	EndTime datetime2 null,
+	SearchSeconds int null,
 
 	InsertUser nvarchar(128) not null default(suser_sname()),
 	InsertDate datetime2 not null default(SYSDATETIME()),
 	UpdateUser nvarchar(128) null,
 	UpdateDate datetime2 null
 )
+
+GO
+
+ALTER TABLE [dbo].[HashSearch] ADD CONSTRAINT FK_HashSearch_HashAlgorithm
+FOREIGN KEY (AlgorithmID) REFERENCES [dbo].[HashAlgorithm](AlgorithmID)
 
 GO
 
@@ -110,6 +123,11 @@ CREATE TABLE [dbo].[HashSimilarity]
 
 GO
 
+ALTER TABLE [dbo].[HashSimilarity] ADD CONSTRAINT FK_HashSimilarity_HashAlgorithm
+FOREIGN KEY (AlgorithmID) REFERENCES [dbo].[HashAlgorithm](AlgorithmID)
+
+GO
+
 /* Create HashAlgorithmsView */
 
 CREATE VIEW [dbo].[HashAlgorithmView]
@@ -126,14 +144,14 @@ AS
 	FROM
 		HashSimilarity s
 	GROUP BY AlgorithmID
-), Searching (AlgorithmID, SearchCount, InputCount, SearchTime) 
+), Searching (AlgorithmID, SearchCount, InputCount, TotalSeconds) 
 AS
 (
 	SELECT 
 		AlgorithmID, 
 		count(*) as SearchCount, 
 		sum(InputCount) as InputCount, 
-		sum(SearchTime) as SearchTime, 
+		sum(SearchSeconds) as TotalSeconds
 	FROM
 		HashSearch s
 	GROUP BY AlgorithmID
@@ -146,7 +164,7 @@ SELECT
 	si.FixPointFound,
 	se.InputCount,
 	se.SearchCount,
-	se.SearchTime
+	se.TotalSeconds
 FROM 
 	HashAlgorithm ha LEFT OUTER JOIN
 	Similarity si on si.AlgorithmID = ha.AlgorithmID LEFT OUTER JOIN
@@ -221,6 +239,89 @@ BEGIN
 		VALUES (@AlgorithmID, @Input, @Result, @BitSimilarity, @ByteSimilarity, @FixPoint)
 
 		SELECT * FROM HashSimilarity s INNER JOIN @Inserted i on s.SimilarityID = i.SimilarityID
+	END TRY
+	BEGIN CATCH
+		DECLARE @ErrorMessage NVARCHAR(4000);
+		DECLARE @ErrorSeverity INT;
+		DECLARE @ErrorState INT;
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE();
+
+		RAISERROR (@ErrorMessage, -- Message text.
+				   @ErrorSeverity, -- Severity.
+				   @ErrorState -- State.
+				   );
+	END CATCH
+END
+
+GO
+
+CREATE PROCEDURE [dbo].[HashSearch_Start] 
+(
+	@AlgorithmName nvarchar(100),
+	@MachineName nvarchar(100) = null,
+	@SearchMode nvarchar(100) = null,
+	@Seed varbinary(4096) = null
+)
+AS
+BEGIN
+	BEGIN TRY
+		DECLARE @AlgorithmID int
+		SELECT @AlgorithmID = AlgorithmID FROM HashAlgorithm WHERE Name = @AlgorithmName
+
+		DECLARE @Inserted TABLE (SearchID int)
+		
+		INSERT INTO HashSearch(AlgorithmID, MachineName, SearchMode, Seed, StartTime)
+		OUTPUT inserted.SearchID INTO @Inserted
+		VALUES (@AlgorithmID, @MachineName, @SearchMode, @Seed, SYSDATETIME())
+
+		SELECT * FROM HashSearch s INNER JOIN @Inserted i on s.SearchID = i.SearchID
+	END TRY
+	BEGIN CATCH
+		DECLARE @ErrorMessage NVARCHAR(4000);
+		DECLARE @ErrorSeverity INT;
+		DECLARE @ErrorState INT;
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE();
+
+		RAISERROR (@ErrorMessage, -- Message text.
+				   @ErrorSeverity, -- Severity.
+				   @ErrorState -- State.
+				   );
+	END CATCH
+END
+
+GO
+
+CREATE PROCEDURE [dbo].[HashSearch_End] 
+(
+	@SearchID int,
+	@InputCount bigint = null,
+	@LastInput varbinary(4096) = null
+)
+AS
+BEGIN
+	BEGIN TRY
+		DECLARE @Inserted TABLE (SearchID int)
+		DECLARE @EndTime datetime2
+		SET @EndTime = SYSDATETIME()
+		
+		UPDATE HashSearch
+		SET
+			InputCount = @InputCount,
+			LastInput = @LastInput,
+			EndTime = @EndTime,
+			Completed = 1,
+			SearchSeconds = DATEDIFF(second, StartTime, @EndTime)
+		WHERE SearchID = @SearchID
+
+		SELECT * FROM HashSearch s WHERE SearchID = @SearchID
 	END TRY
 	BEGIN CATCH
 		DECLARE @ErrorMessage NVARCHAR(4000);
@@ -316,5 +417,7 @@ GO
 
 GRANT EXECUTE ON [dbo].[HashAlgorithm_Insert] TO HashSearch
 GRANT EXECUTE ON [dbo].[HashSimilarity_Insert] TO HashSearch
+GRANT EXECUTE ON [dbo].[HashSearch_Start] TO HashSearch
+GRANT EXECUTE ON [dbo].[HashSearch_End] TO HashSearch
 
 GO
