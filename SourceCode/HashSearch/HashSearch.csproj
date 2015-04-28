@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="AppSettings.cs" />
     <Compile Include="DataAccess.cs" />
+    <Compile Include="PopCount.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
