@@ -178,21 +178,7 @@ CREATE VIEW [dbo].[HashSearchView]
 AS
 SELECT
 	hs.*,
-	ha.Name as 'AlgorithmName',
-	ha.HashLength,
-	ha.TypeName
-FROM 
-	HashSearch hs LEFT OUTER JOIN
-	HashAlgorithm ha on hs.AlgorithmID = ha.AlgorithmID
-
-GO
-
-/* Create HashSearchView */
-
-CREATE VIEW [dbo].[HashSearchView]
-AS
-SELECT
-	hs.*,
+	1.0 * hs.InputCount / hs.SearchSeconds as 'Rate',
 	ha.Name as 'AlgorithmName',
 	ha.HashLength,
 	ha.TypeName
