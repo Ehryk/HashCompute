@@ -60,6 +60,21 @@ namespace HashSearch
 
         #endregion
 
+        #region ChainLength Methods
+
+        public static bool ChainLengthInsert(string algorithmName, byte[] input, long length)
+        {
+            var cmd = new SqlCommand(AppSettings.SP_ChainLength_Insert, Connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@AlgorithmName", algorithmName);
+            cmd.Parameters.AddWithValue("@Input", input);
+            cmd.Parameters.AddWithValue("@Length", length);
+
+            return cmd.ExecuteNonQuery() == 1;
+        }
+
+        #endregion
+
         #region Search Methods
 
         public static int SearchStart(string pAlgorithmName, string pMachineName, string pSearchMode, byte[] pSeed)

@@ -172,6 +172,55 @@ FROM
 
 GO
 
+/* Create HashSearchView */
+
+CREATE VIEW [dbo].[HashSearchView]
+AS
+SELECT
+	hs.*,
+	ha.Name as 'AlgorithmName',
+	ha.HashLength,
+	ha.TypeName
+FROM 
+	HashSearch hs LEFT OUTER JOIN
+	HashAlgorithm ha on hs.AlgorithmID = ha.AlgorithmID
+
+GO
+
+/* Create HashSearchView */
+
+CREATE VIEW [dbo].[HashSearchView]
+AS
+SELECT
+	hs.*,
+	ha.Name as 'AlgorithmName',
+	ha.HashLength,
+	ha.TypeName
+FROM 
+	HashSearch hs LEFT OUTER JOIN
+	HashAlgorithm ha on hs.AlgorithmID = ha.AlgorithmID
+
+GO
+
+/* Create HashSimilarityView */
+
+CREATE VIEW [dbo].[HashSimilarityView]
+AS
+SELECT
+	hs.*,
+	CASE 
+		WHEN BitSimilarity = HashLength THEN 1
+		ELSE 0
+		END as 'FullBitSimilarity',
+	ha.Name as 'AlgorithmName',
+	ha.HashLength,
+	ha.TypeName
+FROM 
+	HashSimilarity hs LEFT OUTER JOIN
+	HashAlgorithm ha on hs.AlgorithmID = ha.AlgorithmID
+
+GO
+
 /* Create Procedures */
 
 CREATE PROCEDURE [dbo].[HashAlgorithm_Insert] 

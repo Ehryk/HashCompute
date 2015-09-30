@@ -59,9 +59,13 @@ namespace HashSearch
                         byte[] input = new byte[ha.HashSize / 8];
                         byte[] result;
                         int similarity;
+                        //ChainLength Mode
+                        long chainLength = 0;
+                        byte[] chainStart = new byte[ha.HashSize / 8];
 
                         int copyStart = input.Length - seed.Length;
                         Buffer.BlockCopy(seed, 0, input, copyStart, seed.Length);
+                        Buffer.BlockCopy(input, 0, chainStart, 0, ha.HashSize / 8);
 
                         string searchMode = GetSearchMode(options);
                         int searchID = DataAccess.SearchStart(options.Algorithm, Environment.MachineName, searchMode, input);
@@ -71,67 +75,120 @@ namespace HashSearch
                             result = ha.ComputeHash(input);
                             inputCount++;
 
-                            if (options.ByteSimilarity)
-                                similarity = result.ByteSimilarity(input);
-                            else
-                                similarity = result.BitSimilarity(input);
-
-                            bool fixPoint = input == result;
-                            if (similarity >= options.Threshold || fixPoint)
+                            if (options.ChainLength)
                             {
-                                if (fixPoint)
+                                chainLength++;
+                                if (result.SequenceEqual(chainStart))
                                 {
                                     if (Color)
                                         Console.ForegroundColor = ConsoleColor.Magenta;
-                                    Console.WriteLine("Fix Point Found!!!");
+                                    Console.WriteLine("Chain of Length {0} found.", chainLength);
                                     Console.ResetColor();
-                                }
 
-                                Console.WriteLine("Input {0}{1} Has Similarity Index {2}.", Omit0x ? "" : "0x", input.GetString(UpperCase), similarity);
-                                if (Verbose)
-                                    Console.WriteLine("(Hash {0}{1})", Omit0x ? "" : "0x", result.GetString(UpperCase));
-                                if (options.Database)
-                                {
-                                    if (options.ByteSimilarity)
-                                        DataAccess.SimilarityInsert(options.Algorithm, input, result, null, similarity, fixPoint);
-                                    else
-                                        DataAccess.SimilarityInsert(options.Algorithm, input, result, similarity, null, fixPoint);
-                                }
+                                    if (options.Database)
+                                    {
+                                        DataAccess.ChainLengthInsert(options.Algorithm, chainStart, chainLength);
+                                    }
 
-                                if (fixPoint && options.Chase)
+                                    chainStart = chainStart.AddOne();
+                                    chainLength = 0;
+                                }
+                                else if (options.MaxChain != 0 && chainLength > options.MaxChain)
                                 {
-                                    //Chase Mode has found the Fix Point, and would then loop infinitely
-                                    retCode = SUCCESS;
-                                    break;
+                                    if (Verbose)
+                                    {
+                                        if (Color)
+                                            Console.ForegroundColor = ConsoleColor.Yellow;
+                                        Console.WriteLine("No Chain Found for {0}{1} (Max: {2}).", Omit0x ? "" : "0x", chainStart.GetString(UpperCase), options.MaxChain);
+                                        Console.ResetColor();
+                                    }
+
+                                    chainStart = chainStart.AddOne();
+                                    chainLength = 0;
+                                }
+                                else if (Verbose)
+                                {
+                                    Console.WriteLine("  - {0}{1} => {0}{2} ({3})", Omit0x ? "" : "0x", chainStart.GetString(UpperCase), input.GetString(UpperCase), chainLength);
+                                }
+                            }
+                            else
+                            {
+                                if (options.ByteSimilarity)
+                                    similarity = result.ByteSimilarity(input);
+                                else
+                                    similarity = result.BitSimilarity(input);
+
+                                bool fixPoint = input == result;
+                                if (similarity >= options.Threshold || fixPoint)
+                                {
+                                    if (fixPoint)
+                                    {
+                                        if (Color)
+                                            Console.ForegroundColor = ConsoleColor.Magenta;
+                                        Console.WriteLine("Fix Point Found!!!");
+                                        Console.ResetColor();
+                                    }
+
+                                    Console.WriteLine("Input {0}{1} Has Similarity Index {2}.", Omit0x ? "" : "0x", input.GetString(UpperCase), similarity);
+                                    if (Verbose)
+                                        Console.WriteLine("(Hash {0}{1})", Omit0x ? "" : "0x", result.GetString(UpperCase));
+                                    if (options.Database)
+                                    {
+                                        if (options.ByteSimilarity)
+                                            DataAccess.SimilarityInsert(options.Algorithm, input, result, null, similarity, fixPoint);
+                                        else
+                                            DataAccess.SimilarityInsert(options.Algorithm, input, result, similarity, null, fixPoint);
+                                    }
+
+                                    if (fixPoint && options.Chase)
+                                    {
+                                        //Chase Mode has found the Fix Point, and would then loop infinitely
+                                        retCode = SUCCESS;
+                                        break;
+                                    }
                                 }
                             }
 
                             if (Console.KeyAvailable)
                             {
                                 var key = Console.ReadKey(true);
-                                if (key.Key == ConsoleKey.C)
+                                if (key.Key == ConsoleKey.C || key.Key == ConsoleKey.S )
                                 {
                                     if (Color)
                                         Console.ForegroundColor = ConsoleColor.Cyan;
-                                    Console.WriteLine("Current Value: {0}{1}", Omit0x ? "" : "0x", input.GetString(UpperCase));
+                                    if (options.ChainLength)
+                                        Console.WriteLine("{4}, Mode: {3}, Chain Start: {0}{1}, Chain Length: {2}", Omit0x ? "" : "0x", chainStart.GetString(UpperCase), chainLength, searchMode, options.Algorithm.ToUpper());
+                                    else
+                                        Console.WriteLine("{4}, Mode: {3}, Current Value: {0}{1}, Inputs: {2}", Omit0x ? "" : "0x", input.GetString(UpperCase), inputCount, searchMode, options.Algorithm.ToUpper());
                                     Console.ResetColor();
                                 }
                                 if (key.Key == ConsoleKey.P)
                                 {
                                     if (Color)
                                         Console.ForegroundColor = ConsoleColor.Green;
+                                    if (options.ChainLength)
+                                        Console.WriteLine("{4}, Mode: {3}, Chain Start: {0}{1}, Chain Length: {2}", Omit0x ? "" : "0x", chainStart.GetString(UpperCase), chainLength, searchMode, options.Algorithm.ToUpper());
+                                    else
+                                        Console.WriteLine("{4}, Mode: {3}, Current Value: {0}{1}, Inputs: {2}", Omit0x ? "" : "0x", input.GetString(UpperCase), inputCount, searchMode, options.Algorithm.ToUpper());
                                     Console.WriteLine("Paused. Press any key to continue...");
                                     Console.ReadKey(true);
                                     Console.ResetColor();
                                 }
                                 if (key.Key == ConsoleKey.Q)
                                 {
+                                    if (Color)
+                                        Console.ForegroundColor = ConsoleColor.Green;
+                                    if (options.ChainLength)
+                                        Console.WriteLine("{4}, Mode: {3}, Chain Start: {0}{1}, Chain Length: {2}", Omit0x ? "" : "0x", chainStart.GetString(UpperCase), chainLength, searchMode, options.Algorithm.ToUpper());
+                                    else
+                                        Console.WriteLine("{4}, Mode: {3}, Current Value: {0}{1}, Inputs: {2}", Omit0x ? "" : "0x", input.GetString(UpperCase), inputCount, searchMode, options.Algorithm.ToUpper());
+                                    Console.WriteLine("Quit.");
                                     retCode = SUCCESS;
                                     break;
                                 }
                             }
 
-                            if (options.Chase)
+                            if (options.Chase || options.ChainLength)
                                 input = result;
                             else if (options.Random)
                                 random.NextBytes(input);
@@ -194,6 +251,8 @@ namespace HashSearch
                 return "Chase";
             if (options.Random)
                 return "Random";
+            if (options.ChainLength)
+                return "ChainLength";
             return "Sequential";
         }
 

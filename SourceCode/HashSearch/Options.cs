@@ -37,11 +37,15 @@ namespace HashSearch
         public bool ByteSimilarity { get; set; }
         [Option('d', "database", DefaultValue = false, HelpText = "Load results to a database")]
         public bool Database { get; set; }
+        [Option('m', "maxchain", DefaultValue = 0L, HelpText = "Maximum Chain Length")]
+        public long MaxChain { get; set; }
 
         [Option('e', "chase", DefaultValue = false, HelpText = "Chase Mode")]
         public bool Chase { get; set; }
         [Option('r', "random", DefaultValue = false, HelpText = "Random Mode")]
         public bool Random { get; set; }
+        [Option('g', "chainlength", DefaultValue = false, HelpText = "Chain Length Mode")]
+        public bool ChainLength { get; set; }
 
         //[HelpOption]
         public string GetUsage()
