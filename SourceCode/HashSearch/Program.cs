@@ -68,7 +68,9 @@ namespace HashSearch
                         Buffer.BlockCopy(input, 0, chainStart, 0, ha.HashSize / 8);
 
                         string searchMode = GetSearchMode(options);
-                        int searchID = DataAccess.SearchStart(options.Algorithm, Environment.MachineName, searchMode, input);
+                        int? searchID = null;
+                        if (options.Database)
+                            searchID = DataAccess.SearchStart(options.Algorithm, Environment.MachineName, searchMode, input);
 
                         while (true)
                         {
@@ -86,10 +88,8 @@ namespace HashSearch
                                     Console.ResetColor();
 
                                     if (options.Database)
-                                    {
                                         DataAccess.ChainLengthInsert(options.Algorithm, chainStart, chainLength);
-                                    }
-
+                              
                                     chainStart = chainStart.AddOne();
                                     chainLength = 0;
                                 }
@@ -188,7 +188,7 @@ namespace HashSearch
                                 }
                             }
 
-                            if (options.Chase || options.ChainLength)
+                            if (options.Chase || options.ChainLength || options.ChainStore)
                                 input = result;
                             else if (options.Random)
                                 random.NextBytes(input);
@@ -208,7 +208,8 @@ namespace HashSearch
                         }
 
                         //End Search in DB
-                        DataAccess.SearchEnd(searchID, inputCount, input);
+                        if (options.Database && searchID.HasValue)
+                            DataAccess.SearchEnd(searchID.Value, inputCount, options.ChainLength ? chainStart : input);
                     }
 
                     if (!options.NoNewLine)
@@ -253,6 +254,8 @@ namespace HashSearch
                 return "Random";
             if (options.ChainLength)
                 return "ChainLength";
+            if (options.ChainStore)
+                return "ChainStore";
             return "Sequential";
         }
 
@@ -267,11 +270,11 @@ namespace HashSearch
             Console.WriteLine("Multiple algorithms available, defaults to MD5.");
             Console.WriteLine();
             Console.WriteLine("Usage and Examples: ");
-            Console.WriteLine(" > HashCompute [Algorithm] [Seed]");
-            Console.WriteLine(" > HashCompute");
-            Console.WriteLine(" > HashCompute sha256 -uvnlx8");
-            Console.WriteLine(" > HashCompute --algorithm=SHA1 --seed=0x9bc30f485ad7 --unmanaged --nonewline --lowercase");
-            Console.WriteLine(" > HashCompute [? | /? | -? | -h | --help | --version]");
+            Console.WriteLine(" > HashSearch [Algorithm] [Seed] [Threshold]");
+            Console.WriteLine(" > HashSearch");
+            Console.WriteLine(" > HashSearch sha256 -uvnlx8");
+            Console.WriteLine(" > HashSearch --algorithm=SHA1 --seed=0x9bc30f485ad7 --threshold=5 --unmanaged --nonewline --lowercase");
+            Console.WriteLine(" > HashSearch [? | /? | -? | -h | --help | --version]");
             Console.WriteLine();
             Console.WriteLine("Options");
             Console.WriteLine(" -v/--verbose    : Add additional output");
@@ -280,6 +283,13 @@ namespace HashSearch
             Console.WriteLine(" -x/--omit0x     : Omit 0x prefix from hex output");
             Console.WriteLine(" -u/--unmanaged  : Use unmanaged hash algorithm, if available");
             Console.WriteLine(" -c/--color      : Disable colored output");
+            Console.WriteLine(" -b/--byte       : Use byte similarity (not bit)");
+            Console.WriteLine(" -d/--database   : Enable Database Interaction");
+            Console.WriteLine(" -e/--chase      : Search in Chase mode");
+            Console.WriteLine(" -r/--random     : Search in Random mode");
+            Console.WriteLine(" -g/--chainlength: Search in ChainLength mode");
+            Console.WriteLine(" -s/--chainstore : Search in ChainStore mode");
+            Console.WriteLine(" -m/--maxchain   : Maximum Chain Length");
             Console.WriteLine();
             Console.Write("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
         }

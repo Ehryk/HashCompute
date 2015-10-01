@@ -46,6 +46,8 @@ namespace HashSearch
         public bool Random { get; set; }
         [Option('g', "chainlength", DefaultValue = false, HelpText = "Chain Length Mode")]
         public bool ChainLength { get; set; }
+        [Option('s', "chainstore", DefaultValue = false, HelpText = "Chain Store Mode")]
+        public bool ChainStore { get; set; }
 
         //[HelpOption]
         public string GetUsage()
