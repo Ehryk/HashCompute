@@ -85,7 +85,6 @@ namespace HashSearch
                         while (true)
                         {
                             result = ha.ComputeHash(input);
-                            inputCount++;
 
                             if (options.ChainLength)
                             {
@@ -102,6 +101,7 @@ namespace HashSearch
                               
                                     chainStart = chainStart.AddOne();
                                     chainLength = 0;
+                                    inputCount++;
 
                                     if (hasFinal && chainStart.SequenceEqual(finalValue))
                                     {
@@ -121,6 +121,7 @@ namespace HashSearch
 
                                     chainStart = chainStart.AddOne();
                                     chainLength = 0;
+                                    inputCount++;
 
                                     if (hasFinal && chainStart.SequenceEqual(finalValue))
                                     {
@@ -135,6 +136,7 @@ namespace HashSearch
                             }
                             else
                             {
+                                inputCount++;
                                 if (options.ByteSimilarity)
                                     similarity = result.ByteSimilarity(input);
                                 else
