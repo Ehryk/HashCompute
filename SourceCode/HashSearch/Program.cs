@@ -54,6 +54,16 @@ namespace HashSearch
                         HashAlgorithm ha = Hashes.GetHashAlgorithm(options.Algorithm, !options.Unmanaged);
 
                         byte[] seed = options.Seed.GetBytes();
+
+                        bool hasFinal = options.Final != null;
+                        byte[] finalValue = new byte[ha.HashSize / 8];
+                        if (hasFinal)
+                        {
+                            byte[] finalInput = options.Final.GetBytes();
+                            int copyFrom = ha.HashSize / 8 - finalInput.Length;
+                            Buffer.BlockCopy(finalInput, 0, finalValue, copyFrom, finalInput.Length);
+                        }
+
                         Random random = new Random();
                         long inputCount = 0;
                         byte[] input = new byte[ha.HashSize / 8];
@@ -92,6 +102,12 @@ namespace HashSearch
                               
                                     chainStart = chainStart.AddOne();
                                     chainLength = 0;
+
+                                    if (hasFinal && chainStart.SequenceEqual(finalValue))
+                                    {
+                                        retCode = SUCCESS;
+                                        break;
+                                    }
                                 }
                                 else if (options.MaxChain != 0 && chainLength > options.MaxChain)
                                 {
@@ -105,6 +121,12 @@ namespace HashSearch
 
                                     chainStart = chainStart.AddOne();
                                     chainLength = 0;
+
+                                    if (hasFinal && chainStart.SequenceEqual(finalValue))
+                                    {
+                                        retCode = SUCCESS;
+                                        break;
+                                    }
                                 }
                                 else if (Verbose)
                                 {
@@ -118,7 +140,7 @@ namespace HashSearch
                                 else
                                     similarity = result.BitSimilarity(input);
 
-                                bool fixPoint = input == result;
+                                bool fixPoint = input.SequenceEqual(result);
                                 if (similarity >= options.Threshold || fixPoint)
                                 {
                                     if (fixPoint)
@@ -197,6 +219,9 @@ namespace HashSearch
                                 try
                                 {
                                     input = input.AddOne();
+
+                                    if (hasFinal && input.SequenceEqual(finalValue))
+                                        throw new OverflowException("Final Value has been reached");
                                 }
                                 catch (OverflowException ex)
                                 {
@@ -290,6 +315,7 @@ namespace HashSearch
             Console.WriteLine(" -g/--chainlength: Search in ChainLength mode");
             Console.WriteLine(" -s/--chainstore : Search in ChainStore mode");
             Console.WriteLine(" -m/--maxchain   : Maximum Chain Length");
+            Console.WriteLine(" -f/--final      : Final Value (optional)");
             Console.WriteLine();
             Console.Write("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
         }

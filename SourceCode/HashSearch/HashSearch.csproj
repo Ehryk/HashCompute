@@ -92,7 +92,8 @@
       PostBuildMacros;
     </PostBuildEventDependsOn>
     <PostBuildEvent>
-      if $(ConfigurationName) == Release copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)$(TargetExt)
+      copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)$(TargetExt)
+      if $(ConfigurationName) == Release copy /y $(TargetPath) $(SolutionDir)..\Builds\$(TargetName)_v@(Major).@(Minor)$(TargetExt)
     </PostBuildEvent>
   </PropertyGroup>
   <UsingTask TaskName="CosturaCleanup" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" TaskFactory="CodeTaskFactory">

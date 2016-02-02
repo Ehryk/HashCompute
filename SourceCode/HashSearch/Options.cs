@@ -37,6 +37,8 @@ namespace HashSearch
         public bool ByteSimilarity { get; set; }
         [Option('d', "database", DefaultValue = false, HelpText = "Load results to a database")]
         public bool Database { get; set; }
+        [Option('f', "final", DefaultValue = null, HelpText = "Final Value")]
+        public string Final { get; set; }
         [Option('m', "maxchain", DefaultValue = 0L, HelpText = "Maximum Chain Length")]
         public long MaxChain { get; set; }
 
