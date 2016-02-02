@@ -56,6 +56,10 @@ namespace HashCompute
                     //Unmanaged Only
                     return new MD5CryptoServiceProvider();
 
+                case "CRC32":
+                case "CRC":
+                    return new CRC32();
+
                 case "RIPEMD":
                 case "RIP":
                 case "EMD":

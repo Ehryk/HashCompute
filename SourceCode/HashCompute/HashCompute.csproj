@@ -50,6 +50,7 @@
     <Compile Include="ApplicationInfo.cs" />
     <Compile Include="Encodings.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="CRC32.cs" />
     <Compile Include="Hashes.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
