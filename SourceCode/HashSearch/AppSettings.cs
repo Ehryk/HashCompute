@@ -27,11 +27,11 @@ namespace HashSearch
         public static string DefaultHashAlgorithm { get { return defaultHashAlgorithm ?? "MD5"; } }
         public static TimeSpan UpdateInterval { get { return TimeSpan.Parse(updateInterval ?? "00:01:00"); } }
 
-        public static string SP_Similarity_Insert { get { return sp_Similarity_Insert ?? "HashSimilarity_Insert"; } }
-        public static string SP_ChainLength_Insert { get { return sp_ChainLength_Insert ?? "ChainLength_Insert"; } }
-        public static string SP_Search_Start { get { return sp_Search_Start ?? "HashSearch_Start"; } }
-        public static string SP_Search_Update { get { return sp_Search_Update ?? "HashSearch_Update"; } }
-        public static string SP_Search_End { get { return sp_Search_End ?? "HashSearch_End"; } }
+        public static string SP_Similarity_Insert { get { return sp_Similarity_Insert ?? "Similarity_Insert"; } }
+        public static string SP_ChainLength_Insert { get { return sp_ChainLength_Insert ?? "Cycle_Insert"; } }
+        public static string SP_Search_Start { get { return sp_Search_Start ?? "Search_Start"; } }
+        public static string SP_Search_Update { get { return sp_Search_Update ?? "Search_Update"; } }
+        public static string SP_Search_End { get { return sp_Search_End ?? "Search_End"; } }
         
         #endregion
     }
