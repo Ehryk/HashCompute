@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace HashCompute
+namespace HashCompute.HashAlgorithms
 {
     /// <summary>
-    /// Implements a 32-bit CRC hash algorithm compatible with Zip etc.
+    /// Implements a 32-bit CRC (Koopman) hash algorithm compatible with Zip etc.
     /// </summary>
     /// <remarks>
     /// Crc32 should only be used for backward compatibility with older file formats
@@ -14,9 +14,9 @@ namespace HashCompute
     /// interface or remember that the result of one Compute call needs to be ~ (XOR) before
     /// being passed in as the seed for the next Compute call.
     /// </remarks>
-    public sealed class CRC32 : HashAlgorithm
+    public sealed class CRC32K : HashAlgorithm
     {
-        public const UInt32 DefaultPolynomial = 0xedb88320u;
+        public const UInt32 DefaultPolynomial = 0xeb31d82e;
         public const UInt32 DefaultSeed = 0xffffffffu;
 
         static UInt32[] defaultTable;
@@ -25,11 +25,11 @@ namespace HashCompute
         readonly UInt32[] table;
         UInt32 hash;
 
-        public CRC32() : this(DefaultPolynomial, DefaultSeed)
+        public CRC32K() : this(DefaultPolynomial, DefaultSeed)
         {
         }
 
-        public CRC32(UInt32 polynomial, UInt32 seed)
+        public CRC32K(UInt32 polynomial, UInt32 seed)
         {
             table = InitializeTable(polynomial);
             this.seed = hash = seed;

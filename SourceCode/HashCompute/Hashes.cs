@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using HashCompute.HashAlgorithms;
 
 namespace HashCompute
 {
@@ -59,6 +60,14 @@ namespace HashCompute
                 case "CRC32":
                 case "CRC":
                     return new CRC32();
+
+                case "CRC32C":
+                case "Castagnoli":
+                    return new CRC32C();
+
+                case "CRC32K":
+                case "Koopman":
+                    return new CRC32K();
 
                 case "RIPEMD":
                 case "RIP":
