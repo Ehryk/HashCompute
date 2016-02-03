@@ -93,7 +93,7 @@ namespace HashSearch
                                 {
                                     if (Color)
                                         Console.ForegroundColor = ConsoleColor.Magenta;
-                                    Console.WriteLine("Chain of Length {0} found.", chainLength);
+                                    Console.WriteLine("Chain of Length {0} found: {1}.", chainLength, chainStart.GetString(UpperCase));
                                     Console.ResetColor();
 
                                     if (options.Database)
