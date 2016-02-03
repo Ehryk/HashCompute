@@ -27,14 +27,14 @@ GO
 CREATE USER HashSearch FOR LOGIN HashSearch;
 GO
 
-/* HashAlgorithms Table */
+/* Algorithm Table */
 
-CREATE TABLE [dbo].[HashAlgorithm]
+CREATE TABLE [dbo].[Algorithm]
 (
 	ID int PRIMARY KEY IDENTITY(1,1),
 
 	Name nvarchar(100) not null,
-	HashLength int null,
+	[Length] int null,
 	TypeName nvarchar(100) null,
 	[Description] nvarchar(900) null,
 
@@ -49,7 +49,7 @@ CREATE TABLE [dbo].[HashAlgorithm]
 
 GO
 
-CREATE TRIGGER [dbo].[trg_HashAlgorithm_Audit] ON [dbo].[HashAlgorithm]
+CREATE TRIGGER [dbo].[trg_Algorithm_Audit] ON [dbo].[Algorithm]
 FOR INSERT, UPDATE
 AS
 BEGIN
@@ -57,29 +57,29 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM deleted)
 	BEGIN
 		-- Insert
-		update	HashAlgorithm
+		update	[Algorithm]
 		set		InsertUser = suser_sname(),
 				InsertDate = sysdatetime()
-		from	HashAlgorithm
-		join	Inserted on HashAlgorithm.ID = Inserted.ID
+		from	[Algorithm]
+		join	Inserted on [Algorithm].ID = Inserted.ID
 	END
 	ELSE
 	BEGIN
 		-- Update
-		update	HashAlgorithm
+		update	[Algorithm]
 		set		UpdateUser = suser_sname(),
 				UpdateDate = sysdatetime()
-		from	HashAlgorithm
-		join	Inserted on HashAlgorithm.ID = Inserted.ID
+		from	[Algorithm]
+		join	Inserted on [Algorithm].ID = Inserted.ID
 	END
 
 END
 
 GO
 
-/* HashSearches Table */
+/* Search Table */
 
-CREATE TABLE [dbo].[HashSearch]
+CREATE TABLE [dbo].[Search]
 (
 	ID int PRIMARY KEY IDENTITY(1,1),
 	AlgorithmID int not null,
@@ -103,12 +103,12 @@ CREATE TABLE [dbo].[HashSearch]
 
 GO
 
-ALTER TABLE [dbo].[HashSearch] ADD CONSTRAINT FK_HashSearch_HashAlgorithm
-FOREIGN KEY (AlgorithmID) REFERENCES [dbo].[HashAlgorithm](ID)
+ALTER TABLE [dbo].[Search] ADD CONSTRAINT FK_Search_Algorithm
+FOREIGN KEY (AlgorithmID) REFERENCES [dbo].[Algorithm](ID)
 
 GO
 
-CREATE TRIGGER [dbo].[trg_HashSearch_Audit] ON [dbo].[HashSearch]
+CREATE TRIGGER [dbo].[trg_Search_Audit] ON [dbo].[Search]
 FOR INSERT, UPDATE
 AS
 BEGIN
@@ -116,29 +116,29 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM deleted)
 	BEGIN
 		-- Insert
-		update	HashSearch
+		update	Search
 		set		InsertUser = suser_sname(),
 				InsertDate = sysdatetime()
-		from	HashSearch
-		join	Inserted on HashSearch.ID = Inserted.ID
+		from	Search
+		join	Inserted on Search.ID = Inserted.ID
 	END
 	ELSE
 	BEGIN
 		-- Update
-		update	HashSearch
+		update	Search
 		set		UpdateUser = suser_sname(),
 				UpdateDate = sysdatetime()
-		from	HashSearch
-		join	Inserted on HashSearch.ID = Inserted.ID
+		from	Search
+		join	Inserted on Search.ID = Inserted.ID
 	END
 
 END
 
 GO
 
-/* HashSimilarity Table */
+/* Similarity Table */
 
-CREATE TABLE [dbo].[HashSimilarity]
+CREATE TABLE [dbo].[Similarity]
 (
 	ID int PRIMARY KEY IDENTITY(1,1),
 
@@ -155,16 +155,16 @@ CREATE TABLE [dbo].[HashSimilarity]
 
 GO
 
-ALTER TABLE [dbo].[HashSimilarity] ADD CONSTRAINT FK_HashSimilarity_HashAlgorithm
-FOREIGN KEY (AlgorithmID) REFERENCES [dbo].[HashAlgorithm](ID)
+ALTER TABLE [dbo].[Similarity] ADD CONSTRAINT FK_Similarity_Algorithm
+FOREIGN KEY (AlgorithmID) REFERENCES [dbo].[Algorithm](ID)
 
 GO
 
-/* Create HashAlgorithmsView */
+/* Create AlgorithmView */
 
-CREATE VIEW [dbo].[HashAlgorithmView]
+CREATE VIEW [dbo].[AlgorithmView]
 AS
-WITH Similarity (AlgorithmID, SimilarityCount, MaxBitSimilarity, MaxByteSimilarity, FixPointFound) 
+WITH Similarities (AlgorithmID, SimilarityCount, MaxBitSimilarity, MaxByteSimilarity, FixPointFound) 
 AS
 (
 	SELECT 
@@ -174,7 +174,7 @@ AS
 		max(ByteSimilarity) as MaxByteSimilarity,
 		max(CAST(FixPoint AS tinyint)) as FixPointFound
 	FROM
-		HashSimilarity s
+		Similarity s
 	GROUP BY AlgorithmID
 ), Searching (AlgorithmID, SearchCount, InputCount, TotalSeconds) 
 AS
@@ -185,11 +185,11 @@ AS
 		sum(InputCount) as InputCount, 
 		sum(SearchSeconds) as TotalSeconds
 	FROM
-		HashSearch s
+		Search s
 	GROUP BY AlgorithmID
 )
 SELECT
-	ha.*,
+	a.*,
 	si.SimilarityCount, 
 	si.MaxBitSimilarity,
 	si.MaxByteSimilarity,
@@ -198,53 +198,53 @@ SELECT
 	se.SearchCount,
 	se.TotalSeconds
 FROM 
-	HashAlgorithm ha LEFT OUTER JOIN
-	Similarity si on si.AlgorithmID = ha.ID LEFT OUTER JOIN
-	Searching se on se.AlgorithmID = ha.ID
+	[Algorithm] a LEFT OUTER JOIN
+	Similarities si on si.AlgorithmID = a.ID LEFT OUTER JOIN
+	Searching se on se.AlgorithmID = a.ID
 
 GO
 
-/* Create HashSearchView */
+/* Create SearchView */
 
-CREATE VIEW [dbo].[HashSearchView]
+CREATE VIEW [dbo].[SearchView]
 AS
 SELECT
-	hs.*,
-	1.0 * hs.InputCount / hs.SearchSeconds as 'Rate',
-	ha.Name as 'AlgorithmName',
-	ha.HashLength,
-	ha.TypeName
+	s.*,
+	1.0 * s.InputCount / s.SearchSeconds as 'Rate',
+	a.Name as 'AlgorithmName',
+	a.[Length],
+	a.TypeName
 FROM 
-	HashSearch hs LEFT OUTER JOIN
-	HashAlgorithm ha on hs.AlgorithmID = ha.ID
+	Search s LEFT OUTER JOIN
+	[Algorithm] a on s.AlgorithmID = a.ID
 
 GO
 
-/* Create HashSimilarityView */
+/* Create SimilarityView */
 
-CREATE VIEW [dbo].[HashSimilarityView]
+CREATE VIEW [dbo].[SimilarityView]
 AS
 SELECT
-	hs.*,
+	s.*,
 	CASE 
-		WHEN BitSimilarity = HashLength THEN 1
+		WHEN BitSimilarity = [Length] THEN 1
 		ELSE 0
 		END as 'FullBitSimilarity',
-	ha.Name as 'AlgorithmName',
-	ha.HashLength,
-	ha.TypeName
+	a.Name as 'AlgorithmName',
+	a.[Length],
+	a.TypeName
 FROM 
-	HashSimilarity hs LEFT OUTER JOIN
-	HashAlgorithm ha on hs.AlgorithmID = ha.ID
+	Similarity s LEFT OUTER JOIN
+	[Algorithm] a on s.AlgorithmID = a.ID
 
 GO
 
 /* Create Procedures */
 
-CREATE PROCEDURE [dbo].[HashAlgorithm_Insert] 
+CREATE PROCEDURE [dbo].[Algorithm_Insert] 
 (
 	@Name nvarchar(100),
-	@HashLength int = null,
+	@Length int = null,
 	@TypeName nvarchar(100) = null
 )
 AS
@@ -252,11 +252,11 @@ BEGIN
 	BEGIN TRY
 		DECLARE @Inserted TABLE (ID int)
 		
-		INSERT INTO HashAlgorithm (Name, HashLength, TypeName)
+		INSERT INTO [Algorithm] (Name, [Length], TypeName)
 		OUTPUT inserted.ID INTO @Inserted
-		VALUES (@Name, @HashLength, @TypeName)
+		VALUES (@Name, @Length, @TypeName)
 
-		SELECT * FROM HashAlgorithm a INNER JOIN @Inserted i on a.ID = i.ID
+		SELECT * FROM [Algorithm] a INNER JOIN @Inserted i on a.ID = i.ID
 	END TRY
 	BEGIN CATCH
 		DECLARE @ErrorMessage NVARCHAR(4000);
@@ -277,7 +277,7 @@ END
 
 GO
 
-CREATE PROCEDURE [dbo].[HashSimilarity_Insert] 
+CREATE PROCEDURE [dbo].[Similarity_Insert] 
 (
 	@AlgorithmName nvarchar(100),
 	@Input varbinary(4096),
@@ -290,7 +290,7 @@ AS
 BEGIN
 	BEGIN TRY
 		DECLARE @AlgorithmID int
-		SELECT @AlgorithmID = ID FROM HashAlgorithm WHERE Name = @AlgorithmName
+		SELECT @AlgorithmID = ID FROM [Algorithm] WHERE Name = @AlgorithmName
 
 		IF (@FixPoint is null)
 		BEGIN
@@ -301,11 +301,11 @@ BEGIN
 
 		DECLARE @Inserted TABLE (ID int)
 		
-		INSERT INTO HashSimilarity(AlgorithmID, Input, Result, BitSimilarity, ByteSimilarity, FixPoint)
+		INSERT INTO Similarity(AlgorithmID, Input, Result, BitSimilarity, ByteSimilarity, FixPoint)
 		OUTPUT inserted.ID INTO @Inserted
 		VALUES (@AlgorithmID, @Input, @Result, @BitSimilarity, @ByteSimilarity, @FixPoint)
 
-		SELECT * FROM HashSimilarity s INNER JOIN @Inserted i on s.ID = i.ID
+		SELECT * FROM Similarity s INNER JOIN @Inserted i on s.ID = i.ID
 	END TRY
 	BEGIN CATCH
 		DECLARE @ErrorMessage NVARCHAR(4000);
@@ -326,7 +326,7 @@ END
 
 GO
 
-CREATE PROCEDURE [dbo].[HashSearch_Start] 
+CREATE PROCEDURE [dbo].[Search_Start] 
 (
 	@AlgorithmName nvarchar(100),
 	@MachineName nvarchar(100) = null,
@@ -337,15 +337,15 @@ AS
 BEGIN
 	BEGIN TRY
 		DECLARE @AlgorithmID int
-		SELECT @AlgorithmID = ID FROM HashAlgorithm WHERE Name = @AlgorithmName
+		SELECT @AlgorithmID = ID FROM [Algorithm] WHERE Name = @AlgorithmName
 
 		DECLARE @Inserted TABLE (ID int)
 		
-		INSERT INTO HashSearch(AlgorithmID, MachineName, SearchMode, Seed, StartTime)
+		INSERT INTO Search(AlgorithmID, MachineName, SearchMode, Seed, StartTime)
 		OUTPUT inserted.ID INTO @Inserted
 		VALUES (@AlgorithmID, @MachineName, @SearchMode, @Seed, SYSDATETIME())
 
-		SELECT * FROM HashSearch s INNER JOIN @Inserted i on s.ID = i.ID
+		SELECT * FROM Search s INNER JOIN @Inserted i on s.ID = i.ID
 	END TRY
 	BEGIN CATCH
 		DECLARE @ErrorMessage NVARCHAR(4000);
@@ -366,7 +366,7 @@ END
 
 GO
 
-CREATE PROCEDURE [dbo].[HashSearch_End] 
+CREATE PROCEDURE [dbo].[Search_End] 
 (
 	@SearchID int,
 	@InputCount bigint = null,
@@ -378,7 +378,7 @@ BEGIN
 		DECLARE @EndTime datetime2
 		SET @EndTime = SYSDATETIME()
 		
-		UPDATE HashSearch
+		UPDATE Search
 		SET
 			InputCount = @InputCount,
 			LastInput = @LastInput,
@@ -387,7 +387,7 @@ BEGIN
 			SearchSeconds = DATEDIFF(second, StartTime, @EndTime)
 		WHERE ID = @SearchID
 
-		SELECT * FROM HashSearch s WHERE ID = @SearchID
+		SELECT * FROM Search s WHERE ID = @SearchID
 	END TRY
 	BEGIN CATCH
 		DECLARE @ErrorMessage NVARCHAR(4000);
@@ -409,7 +409,7 @@ END
 GO
 
 /* Insert Algorithms */
-INSERT INTO HashAlgorithm (Name, HashLength, TypeName, [Description])
+INSERT INTO [Algorithm] (Name, [Length], TypeName, [Description])
 --Cryptographic
 SELECT 'BLAKE256', 256, 'Cryptographic', NULL UNION ALL
 SELECT 'BLAKE512', 512, 'Cryptographic', NULL UNION ALL
@@ -441,7 +441,7 @@ SELECT 'SWIFFT', 512, 'Cryptographic', NULL UNION ALL
 SELECT 'Tiger', 192, 'Cryptographic', NULL UNION ALL
 SELECT 'Whirlpool', 512, 'Cryptographic', NULL
 
-INSERT INTO HashAlgorithm (Name, HashLength, TypeName, [Description], Polynomial_Normal, Polynomial_Reversed)
+INSERT INTO [Algorithm] (Name, [Length], TypeName, [Description], Polynomial_Normal, Polynomial_Reversed)
 --Cyclic Redundancy Check
 SELECT 'CRC1',  1, 'Cyclic Redundancy Check', 'Parity Bit', 0x1, 0x1 UNION ALL
 SELECT 'CRC4',  4, 'Cyclic Redundancy Check', 'ITU G.704', 0x3, 0xC UNION ALL
@@ -503,7 +503,7 @@ SELECT 'CRC40',  40, 'Cyclic Redundancy Check', 'GSM', 0x0004820009, 0x900041200
 SELECT 'CRC64',  64, 'Cyclic Redundancy Check', 'ECMA', 0x42F0E1EBA9EA3693, 0xC96C5795D7870F42 UNION ALL
 SELECT 'CRC64I', 64, 'Cyclic Redundancy Check', 'ISO', 0x000000000000001B, 0xD800000000000000
 
-INSERT INTO HashAlgorithm (Name, HashLength, TypeName, [Description])
+INSERT INTO [Algorithm] (Name, [Length], TypeName, [Description])
 --Checksums
 SELECT 'SUM', NULL, 'Checksum', NULL UNION ALL
 SELECT 'SUM8', 8, 'Checksum', NULL UNION ALL
@@ -538,9 +538,9 @@ GO
 
 /* Grant Permissions */
 
-GRANT EXECUTE ON [dbo].[HashAlgorithm_Insert] TO HashSearch
-GRANT EXECUTE ON [dbo].[HashSimilarity_Insert] TO HashSearch
-GRANT EXECUTE ON [dbo].[HashSearch_Start] TO HashSearch
-GRANT EXECUTE ON [dbo].[HashSearch_End] TO HashSearch
+GRANT EXECUTE ON [dbo].[Algorithm_Insert] TO HashSearch
+GRANT EXECUTE ON [dbo].[Similarity_Insert] TO HashSearch
+GRANT EXECUTE ON [dbo].[Search_Start] TO HashSearch
+GRANT EXECUTE ON [dbo].[Search_End] TO HashSearch
 
 GO

@@ -1,4 +1,7 @@
 
+USE HashSearch
+GO
+
 /* Cycle Table */
 
 CREATE TABLE [dbo].[Cycle]
@@ -14,14 +17,14 @@ CREATE TABLE [dbo].[Cycle]
 
 GO
 
-ALTER TABLE [dbo].[Cycle] ADD CONSTRAINT FK_Cycle_HashAlgorithm
-FOREIGN KEY (AlgorithmID) REFERENCES [dbo].[HashAlgorithm](ID)
+ALTER TABLE [dbo].[Cycle] ADD CONSTRAINT FK_Cycle_Algorithm
+FOREIGN KEY (AlgorithmID) REFERENCES [dbo].[Algorithm](ID)
 
 GO
 
-/* Alter HashAlgorithmsView */
+/* Alter AlgorithmsView */
 
-ALTER VIEW [dbo].[HashAlgorithmView]
+ALTER VIEW [dbo].[AlgorithmView]
 AS
 WITH Cycles (AlgorithmID, CycleCount, [MaxLength], MinLength, FixPointFound) 
 AS
@@ -39,7 +42,7 @@ AS
 		Cycle c
 	GROUP BY 
 		AlgorithmID
-), Similarity (AlgorithmID, SimilarityCount, MaxBitSimilarity, MaxByteSimilarity, FixPointFound) 
+), Similarities (AlgorithmID, SimilarityCount, MaxBitSimilarity, MaxByteSimilarity, FixPointFound) 
 AS
 (
 	SELECT 
@@ -49,7 +52,7 @@ AS
 		max(ByteSimilarity) as MaxByteSimilarity,
 		max(CAST(FixPoint AS tinyint)) as FixPointFound
 	FROM
-		HashSimilarity s
+		Similarity s
 	GROUP BY AlgorithmID
 ), Searching (AlgorithmID, SearchCount, InputCount, TotalSeconds) 
 AS
@@ -60,11 +63,11 @@ AS
 		sum(InputCount) as InputCount, 
 		sum(SearchSeconds) as TotalSeconds
 	FROM
-		HashSearch s
+		Search s
 	GROUP BY AlgorithmID
 )
 SELECT
-	ha.*,
+	a.*,
 	si.SimilarityCount, 
 	si.MaxBitSimilarity,
 	si.MaxByteSimilarity,
@@ -81,10 +84,10 @@ SELECT
 		ELSE 0 
 	END AS FixPointFound
 FROM 
-	HashAlgorithm ha LEFT OUTER JOIN
-	Similarity si on si.AlgorithmID = ha.ID LEFT OUTER JOIN
-	Cycles c on c.AlgorithmID = ha.ID LEFT OUTER JOIN
-	Searching se on se.AlgorithmID = ha.ID
+	[Algorithm] a LEFT OUTER JOIN
+	Similarities si on si.AlgorithmID = a.ID LEFT OUTER JOIN
+	Cycles c on c.AlgorithmID = a.ID LEFT OUTER JOIN
+	Searching se on se.AlgorithmID = a.ID
 
 GO
 
@@ -94,12 +97,12 @@ CREATE VIEW [dbo].[CycleView]
 AS
 SELECT
 	c.*,
-	ha.Name as 'AlgorithmName',
-	ha.HashLength,
-	ha.TypeName
+	a.Name as 'AlgorithmName',
+	a.[Length] as 'AlgorithmLength',
+	a.TypeName
 FROM 
 	Cycle c LEFT OUTER JOIN
-	HashAlgorithm ha on c.AlgorithmID = ha.ID
+	[Algorithm] a on c.AlgorithmID = a.ID
 
 GO
 
@@ -115,7 +118,7 @@ AS
 BEGIN
 	BEGIN TRY
 		DECLARE @AlgorithmID int
-		SELECT @AlgorithmID = ID FROM HashAlgorithm WHERE Name = @AlgorithmName
+		SELECT @AlgorithmID = ID FROM [Algorithm] WHERE Name = @AlgorithmName
 
 		DECLARE @Inserted TABLE (ID int)
 		
