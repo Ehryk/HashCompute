@@ -92,13 +92,26 @@ namespace HashSearch
             return (int)cmd.ExecuteScalar();
         }
 
+        public static bool SearchUpdate(int pSearchID, long? pInputCount = null, byte[] pLastInput = null)
+        {
+            var cmd = new SqlCommand(AppSettings.SP_Search_Update, Connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@SearchID", pSearchID);
+            if (pInputCount != null)
+                cmd.Parameters.AddWithValue("@InputCount", pInputCount);
+            if (pLastInput != null)
+                cmd.Parameters.AddWithValue("@LastInput", pLastInput);
+
+            return cmd.ExecuteNonQuery() == 1;
+        }
+
         public static bool SearchEnd(int pSearchID, long? pInputCount = null, byte[] pLastInput = null)
         {
             var cmd = new SqlCommand(AppSettings.SP_Search_End, Connection);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@SearchID", pSearchID);
             if (pInputCount != null)
-            cmd.Parameters.AddWithValue("@InputCount", pInputCount);
+                cmd.Parameters.AddWithValue("@InputCount", pInputCount);
             if (pLastInput != null)
                 cmd.Parameters.AddWithValue("@LastInput", pLastInput);
 

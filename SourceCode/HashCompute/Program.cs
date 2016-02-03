@@ -50,7 +50,7 @@ namespace HashCompute
                             Hashes.GetHashAlgorithm(options.Input, !options.Unmanaged);
                             algorithm = options.Input;
                         }
-                        catch (NotSupportedException ex) { }
+                        catch (NotSupportedException ex) { var message = ex.Message; }
                     }
                     HashAlgorithm ha = Hashes.GetHashAlgorithm(algorithm, !options.Unmanaged);
                     string encoding = options.Encoding;

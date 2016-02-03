@@ -1,1 +1,1 @@
-HashSearch.exe CRC32 0x01800000 --chainlength --maxchain=100 -dl
+HashSearch.exe CRC32 0x70000000 --final=0x80000000 --chainlength --maxchain=100 -dl

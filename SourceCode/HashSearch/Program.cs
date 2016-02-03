@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Timers;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using HashCompute;
 
 namespace HashSearch
@@ -21,6 +19,9 @@ namespace HashSearch
         public static bool UpperCase = false;
         public static bool Color = true;
         public static bool Omit0x = false;
+
+        private static Timer UpdateTimer;
+        public static bool UpdateNeeded = false;
 
         static int Main(string[] args)
         {
@@ -64,6 +65,9 @@ namespace HashSearch
                             Buffer.BlockCopy(finalInput, 0, finalValue, copyFrom, finalInput.Length);
                         }
 
+                        if (options.Database)
+                            InitializeUpdateTimer();
+                        
                         Random random = new Random();
                         long inputCount = 0;
                         byte[] input = new byte[ha.HashSize / 8];
@@ -85,7 +89,6 @@ namespace HashSearch
                         while (true)
                         {
                             result = ha.ComputeHash(input);
-                            inputCount++;
 
                             if (options.ChainLength)
                             {
@@ -94,7 +97,7 @@ namespace HashSearch
                                 {
                                     if (Color)
                                         Console.ForegroundColor = ConsoleColor.Magenta;
-                                    Console.WriteLine("Chain of Length {0} found.", chainLength);
+                                    Console.WriteLine("Chain of Length {0} found: {1}.", chainLength, chainStart.GetString(UpperCase));
                                     Console.ResetColor();
 
                                     if (options.Database)
@@ -102,6 +105,7 @@ namespace HashSearch
                               
                                     chainStart = chainStart.AddOne();
                                     chainLength = 0;
+                                    inputCount++;
 
                                     if (hasFinal && chainStart.SequenceEqual(finalValue))
                                     {
@@ -121,6 +125,7 @@ namespace HashSearch
 
                                     chainStart = chainStart.AddOne();
                                     chainLength = 0;
+                                    inputCount++;
 
                                     if (hasFinal && chainStart.SequenceEqual(finalValue))
                                     {
@@ -135,6 +140,7 @@ namespace HashSearch
                             }
                             else
                             {
+                                inputCount++;
                                 if (options.ByteSimilarity)
                                     similarity = result.ByteSimilarity(input);
                                 else
@@ -210,6 +216,22 @@ namespace HashSearch
                                 }
                             }
 
+                            if (options.Database && UpdateNeeded)
+                            {
+                                try
+                                {
+                                    DataAccess.SearchUpdate(searchID.Value, inputCount, options.ChainLength ? chainStart : input);
+                                }
+                                catch (Exception ex)
+                                {
+                                    if (Color)
+                                        Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("Could not update search: {0}", ex.Message);
+                                    Console.ResetColor();
+                                }
+                                UpdateNeeded = false;
+                            }
+
                             if (options.Chase || options.ChainLength || options.ChainStore)
                                 input = result;
                             else if (options.Random)
@@ -226,6 +248,11 @@ namespace HashSearch
                                 catch (OverflowException ex)
                                 {
                                     //Sequential Mode has overflown; domain exhausted
+                                    if (Color)
+                                        Console.ForegroundColor = ConsoleColor.Green;
+                                    Console.WriteLine("Processing Finished: {0}", ex.Message);
+                                    Console.ResetColor();
+
                                     retCode = SUCCESS;
                                     break;
                                 }
@@ -318,6 +345,37 @@ namespace HashSearch
             Console.WriteLine(" -f/--final      : Final Value (optional)");
             Console.WriteLine();
             Console.Write("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
+        }
+
+        public static void InitializeUpdateTimer()
+        {
+            UpdateTimer = new Timer(AppSettings.UpdateInterval.TotalMilliseconds);
+            UpdateTimer.Elapsed += SetUpdateNeeded;
+            UpdateTimer.AutoReset = true;
+            UpdateTimer.Enabled = true;
+        }
+
+        public static void PauseUpdateTimer()
+        {
+            if (UpdateTimer != null)
+                UpdateTimer.Enabled = false;
+        }
+
+        public static void ResumeUpdateTimer()
+        {
+            if (UpdateTimer != null)
+                UpdateTimer.Enabled = true;
+        }
+
+        public static void CancelUpdateTimer()
+        {
+            if (UpdateTimer != null)
+                UpdateTimer.Dispose();
+        }
+
+        private static void SetUpdateNeeded(object source, ElapsedEventArgs e)
+        {
+            UpdateNeeded = true;
         }
     }
 }
