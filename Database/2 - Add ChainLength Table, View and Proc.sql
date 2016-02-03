@@ -144,3 +144,4 @@ END
 
 GO
 
+GRANT EXECUTE ON [dbo].[ChainLength_Insert] TO HashSearch
