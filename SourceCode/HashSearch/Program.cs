@@ -105,6 +105,7 @@ namespace HashSearch
                               
                                     chainStart = chainStart.AddOne();
                                     chainLength = 0;
+                                    Buffer.BlockCopy(chainStart, 0, result, 0, ha.HashSize / 8);
                                     inputCount++;
 
                                     if (hasFinal && chainStart.SequenceEqual(finalValue))
@@ -125,6 +126,7 @@ namespace HashSearch
 
                                     chainStart = chainStart.AddOne();
                                     chainLength = 0;
+                                    Buffer.BlockCopy(chainStart, 0, result, 0, ha.HashSize / 8);
                                     inputCount++;
 
                                     if (hasFinal && chainStart.SequenceEqual(finalValue))
@@ -135,7 +137,7 @@ namespace HashSearch
                                 }
                                 else if (Verbose)
                                 {
-                                    Console.WriteLine("  - {0}{1} => {0}{2} ({3})", Omit0x ? "" : "0x", chainStart.GetString(UpperCase), input.GetString(UpperCase), chainLength);
+                                    Console.WriteLine("  - {0}{1} => {0}{2} ({3})", Omit0x ? "" : "0x", chainStart.GetString(UpperCase), result.GetString(UpperCase), chainLength);
                                 }
                             }
                             else
@@ -233,7 +235,7 @@ namespace HashSearch
                             }
 
                             if (options.Chase || options.ChainLength || options.ChainStore)
-                                input = result;
+                                Buffer.BlockCopy(result, 0, input, 0, ha.HashSize / 8);
                             else if (options.Random)
                                 random.NextBytes(input);
                             else //Sequential
