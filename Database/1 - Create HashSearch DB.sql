@@ -343,7 +343,7 @@ CREATE PROCEDURE [dbo].[HashSearch_End]
 AS
 BEGIN
 	BEGIN TRY
-		DECLARE @Inserted TABLE (SearchID int)
+
 		DECLARE @EndTime datetime2
 		SET @EndTime = SYSDATETIME()
 		
