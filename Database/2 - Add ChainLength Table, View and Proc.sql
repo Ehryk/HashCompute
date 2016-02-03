@@ -1,21 +1,21 @@
 
-/* ChainLength Table */
+/* Cycle Table */
 
-CREATE TABLE [dbo].[ChainLength]
+CREATE TABLE [dbo].[Cycle]
 (
-	ChainLengthID int PRIMARY KEY IDENTITY(1,1),
+	ID int PRIMARY KEY IDENTITY(1,1),
 
 	AlgorithmID int not null,
 	Input varbinary(4096) not null,
-	ChainLength bigint not null,
+	[Length] bigint not null,
 
-	InsertDate datetime2 not null default(SYSDATETIME())
+	InsertDate datetime2 not null default(sysdatetime())
 )
 
 GO
 
-ALTER TABLE [dbo].[ChainLength] ADD CONSTRAINT FK_ChainLength_HashAlgorithm
-FOREIGN KEY (AlgorithmID) REFERENCES [dbo].[HashAlgorithm](AlgorithmID)
+ALTER TABLE [dbo].[Cycle] ADD CONSTRAINT FK_Cycle_HashAlgorithm
+FOREIGN KEY (AlgorithmID) REFERENCES [dbo].[HashAlgorithm](ID)
 
 GO
 
@@ -23,20 +23,20 @@ GO
 
 ALTER VIEW [dbo].[HashAlgorithmView]
 AS
-WITH Chains (AlgorithmID, ChainCount, [MaxLength], MinLength, FixPointFound) 
+WITH Cycles (AlgorithmID, CycleCount, [MaxLength], MinLength, FixPointFound) 
 AS
 (
 	SELECT 
 		AlgorithmID, 
-		count(*) as ChainCount, 
-		max(ChainLength) as [MaxLength], 
-		min(ChainLength) as MinLength,
+		count(*) as CycleCount, 
+		max([Length]) as [MaxLength], 
+		min([Length]) as MinLength,
 		CASE 
-			WHEN min(ChainLength) = 1 THEN 1
+			WHEN min([Length]) = 1 THEN 1
 			ELSE 0
 		END AS FixPointFound
 	FROM
-		ChainLength cl
+		Cycle c
 	GROUP BY 
 		AlgorithmID
 ), Similarity (AlgorithmID, SimilarityCount, MaxBitSimilarity, MaxByteSimilarity, FixPointFound) 
@@ -72,40 +72,40 @@ SELECT
 	se.InputCount,
 	se.SearchCount,
 	se.TotalSeconds,
-	cl.ChainCount,
-	cl.[MaxLength],
-	cl.MinLength,
-	cl.FixPointFound as ChainLengthFixPointFound,
+	c.CycleCount,
+	c.[MaxLength],
+	c.MinLength,
+	c.FixPointFound as ChainLengthFixPointFound,
 	CASE 
-		WHEN si.FixPointFound = 1 OR cl.FixPointFound = 1 THEN 1
+		WHEN si.FixPointFound = 1 OR c.FixPointFound = 1 THEN 1
 		ELSE 0 
 	END AS FixPointFound
 FROM 
 	HashAlgorithm ha LEFT OUTER JOIN
-	Similarity si on si.AlgorithmID = ha.AlgorithmID LEFT OUTER JOIN
-	Chains cl on cl.AlgorithmID = ha.AlgorithmID LEFT OUTER JOIN
-	Searching se on se.AlgorithmID = ha.AlgorithmID
+	Similarity si on si.AlgorithmID = ha.ID LEFT OUTER JOIN
+	Cycles c on c.AlgorithmID = ha.ID LEFT OUTER JOIN
+	Searching se on se.AlgorithmID = ha.ID
 
 GO
 
 /* Create ChainLengthView */
 
-CREATE VIEW [dbo].[ChainLengthView]
+CREATE VIEW [dbo].[CycleView]
 AS
 SELECT
-	cl.*,
+	c.*,
 	ha.Name as 'AlgorithmName',
 	ha.HashLength,
 	ha.TypeName
 FROM 
-	ChainLength cl LEFT OUTER JOIN
-	HashAlgorithm ha on cl.AlgorithmID = ha.AlgorithmID
+	Cycle c LEFT OUTER JOIN
+	HashAlgorithm ha on c.AlgorithmID = ha.ID
 
 GO
 
 /* Create ChainLength Procedures */
 
-CREATE PROCEDURE [dbo].[ChainLength_Insert] 
+CREATE PROCEDURE [dbo].[Cycle_Insert] 
 (
 	@AlgorithmName nvarchar(100),
 	@Input varbinary(4096),
@@ -115,15 +115,15 @@ AS
 BEGIN
 	BEGIN TRY
 		DECLARE @AlgorithmID int
-		SELECT @AlgorithmID = AlgorithmID FROM HashAlgorithm WHERE Name = @AlgorithmName
+		SELECT @AlgorithmID = ID FROM HashAlgorithm WHERE Name = @AlgorithmName
 
-		DECLARE @Inserted TABLE (ChainLengthID int)
+		DECLARE @Inserted TABLE (ID int)
 		
-		INSERT INTO ChainLength(AlgorithmID, Input, ChainLength)
-		OUTPUT inserted.ChainLengthID INTO @Inserted
+		INSERT INTO Cycle(AlgorithmID, Input, [Length])
+		OUTPUT inserted.ID INTO @Inserted
 		VALUES (@AlgorithmID, @Input, @Length)
 
-		SELECT * FROM ChainLength cl INNER JOIN @Inserted i on cl.ChainLengthID = i.ChainLengthID
+		SELECT c.* FROM Cycle c INNER JOIN @Inserted i on c.ID = i.ID
 	END TRY
 	BEGIN CATCH
 		DECLARE @ErrorMessage NVARCHAR(4000);
@@ -144,4 +144,4 @@ END
 
 GO
 
-GRANT EXECUTE ON [dbo].[ChainLength_Insert] TO HashSearch
+GRANT EXECUTE ON [dbo].[Cycle_Insert] TO HashSearch

@@ -13,4 +13,4 @@ where Completed = 0
 select SearchID, DATEDIFF(second, StartTime, GETDATE()) from HashSearch
 where Completed = 0
 
-select * from ChainLengthView
+select * from CycleView

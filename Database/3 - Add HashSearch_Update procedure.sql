@@ -16,9 +16,9 @@ BEGIN
 			InputCount = @InputCount,
 			LastInput = @LastInput,
 			SearchSeconds = DATEDIFF(second, StartTime, SYSDATETIME())
-		WHERE SearchID = @SearchID
+		WHERE ID = @SearchID
 
-		SELECT * FROM HashSearch s WHERE SearchID = @SearchID
+		SELECT * FROM HashSearch s WHERE ID = @SearchID
 	END TRY
 	BEGIN CATCH
 		DECLARE @ErrorMessage NVARCHAR(4000);
