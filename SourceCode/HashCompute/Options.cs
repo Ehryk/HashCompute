@@ -27,6 +27,8 @@ namespace HashCompute
         public bool FileMode { get; set; }
         [Option('t', "text", DefaultValue = false, HelpText = "Interpret input as filename(s) and hash as text")]
         public bool TextMode { get; set; }
+        [Option('d', "hex", DefaultValue = false, HelpText = "Interpret input as a hexadecimal string")]
+        public bool HexMode { get; set; }
         [Option('u', "unmanaged", DefaultValue = false, HelpText = "Use Unmanaged Hash Algorithms")]
         public bool Unmanaged { get; set; }
         [Option('b', "big-endian", DefaultValue = false, HelpText = "Use Big Endian Encoding")]

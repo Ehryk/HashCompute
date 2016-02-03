@@ -51,5 +51,20 @@ namespace HashCompute
             
             return new string(Array.FindAll(input.ToCharArray(), (c => (char.IsLetterOrDigit(c)))));
         }
+
+        public static byte[] GetHexBytes(this string hex)
+        {
+            var sc = StringComparison.OrdinalIgnoreCase;
+            hex = hex.Trim();
+            if (hex.StartsWith("0x", sc))
+                hex = hex.Substring(2);
+            else if (hex.StartsWith("16#"))
+                hex = hex.Substring(3);
+
+            return Enumerable.Range(0, hex.Length)
+                 .Where(x => x % 2 == 0)
+                 .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                 .ToArray();
+        }
     }
 }

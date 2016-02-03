@@ -192,12 +192,21 @@ namespace HashCompute
                     }
                     else
                     {
-                        //Interpret the input as a String
-                        byte[] hash = Hashes.GetHash(input, ha, enc);
+                        byte[] hash;
+                        if (options.HexMode)
+                        {
+                            //Interpret the input as a Hex String
+                            hash = Hashes.GetHash(input.GetHexBytes(), ha);
+                        }
+                        else
+                        {
+                            //Interpret the input as a String
+                            hash = Hashes.GetHash(input, ha, enc);
+                        }
 
                         if (options.Verbose)
                         {
-                            Console.WriteLine("Input: {0}", input);
+                            Console.WriteLine("Input: {0}{1}", input, options.HexMode ? " (hex)" : "");
                             Console.WriteLine("Hash : {0}", ha.GetType().Name);
                             if (options.ShowUTF8)
                                 Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
@@ -287,6 +296,7 @@ namespace HashCompute
             Console.WriteLine(" -f/--file       : Interpret input as a list of file(s) and hash as binary");
             Console.WriteLine(" -t/--text       : Interpret input as a list of file(s) and hash as text (w/-e)");
             Console.WriteLine(" -e/--encoding   : Encoding to use (default: SystemDefault)");
+            Console.WriteLine(" -d/--hex        : Interpret input as a hexadecimal string");
             Console.WriteLine(" -v/--verbose    : Add additional output");
             Console.WriteLine(" -n/--nonewline  : Output without trailing newline");
             Console.WriteLine(" -l/--lowercase  : Output hex with lowercase (0DE3 => 0de3)");
