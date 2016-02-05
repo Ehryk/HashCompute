@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace HashCompute
+namespace Core
 {
     public static class ApplicationInfo
     {

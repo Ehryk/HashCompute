@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("HashSearch")]
-[assembly: AssemblyDescription("Searches through hash domains")]
+[assembly: AssemblyDescription("Searches through hash domains (Console Application)")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("HashSearch")]
@@ -14,4 +14,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 [assembly: Guid("e1abe251-badf-496d-8639-c5be3bd70af9")]
 
-[assembly: AssemblyVersion("1.2.*")]
+[assembly: AssemblyVersion("2.0.*")]

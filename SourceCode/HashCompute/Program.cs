@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text;
+using Core;
 
 namespace HashCompute
 {
@@ -193,10 +194,10 @@ namespace HashCompute
                     else
                     {
                         byte[] hash;
-                        if (options.HexMode)
+                        if (options.DecimalMode)
                         {
                             //Interpret the input as a Hex String
-                            hash = Hashes.GetHash(input.GetHexBytes(), ha);
+                            hash = Hashes.GetHash(input.GetBytes(), ha);
                         }
                         else
                         {
@@ -206,7 +207,7 @@ namespace HashCompute
 
                         if (options.Verbose)
                         {
-                            Console.WriteLine("Input: {0}{1}", input, options.HexMode ? " (hex)" : "");
+                            Console.WriteLine("Input: {0}{1}", options.DecimalMode ? input.GetBytes().GetString(UpperCase) : input, options.DecimalMode ? " (in hex)" : "");
                             Console.WriteLine("Hash : {0}", ha.GetType().Name);
                             if (options.ShowUTF8)
                                 Console.WriteLine("UTF8 : {0}", Encoding.UTF8.GetString(hash).Replace("\r", "").Replace("\n", ""));
@@ -296,7 +297,7 @@ namespace HashCompute
             Console.WriteLine(" -f/--file       : Interpret input as a list of file(s) and hash as binary");
             Console.WriteLine(" -t/--text       : Interpret input as a list of file(s) and hash as text (w/-e)");
             Console.WriteLine(" -e/--encoding   : Encoding to use (default: SystemDefault)");
-            Console.WriteLine(" -d/--hex        : Interpret input as a hexadecimal string");
+            Console.WriteLine(" -d/--decimal    : Interpret input as a string of decimals");
             Console.WriteLine(" -v/--verbose    : Add additional output");
             Console.WriteLine(" -n/--nonewline  : Output without trailing newline");
             Console.WriteLine(" -l/--lowercase  : Output hex with lowercase (0DE3 => 0de3)");
@@ -308,7 +309,8 @@ namespace HashCompute
             Console.WriteLine(" -c/--color      : Disable colored output");
             Console.WriteLine();
             Console.WriteLine("Supported Algorithms: MD5, SHA1, SHA256, SHA384, SHA512, RIPEMD");
-            Console.Write("Supported Encodings: Default, ASCII, UTF7, UTF8, UTF16/Unicode (-b), UTF32 (-b)");
+            Console.WriteLine("Supported Encodings: Default, ASCII, UTF7, UTF8, UTF16/Unicode (-b), UTF32 (-b)");
+            Console.Write("Supported Bases: decimal (default,10#), hexadecimal(0x,16#), octal(0,8#,0o), binary(0b,2#)");
         }
     }
 }

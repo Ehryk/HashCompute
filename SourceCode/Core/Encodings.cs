@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
 
-namespace HashCompute
+namespace Core
 {
-    class Encodings
+    public class Encodings
     {
         public static Encoding GetEncoding(string encoding = "Default", bool littleEndian = true)
         {

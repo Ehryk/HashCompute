@@ -2,7 +2,7 @@
 using System.Timers;
 using System.Linq;
 using System.Security.Cryptography;
-using HashCompute;
+using Core;
 
 namespace HashSearch
 {

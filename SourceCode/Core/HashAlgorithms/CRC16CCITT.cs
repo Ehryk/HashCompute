@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace HashCompute.HashAlgorithms
+namespace Core.HashAlgorithms
 {
     /// <summary>
-    /// Implements a 32-bit CRC hash algorithm compatible with Zip etc.
+    /// Implements a 16-bit CRC (CCITT) hash algorithm compatible with Zip etc.
     /// </summary>
     /// <remarks>
     /// Crc32 should only be used for backward compatibility with older file formats
@@ -14,22 +14,22 @@ namespace HashCompute.HashAlgorithms
     /// interface or remember that the result of one Compute call needs to be ~ (XOR) before
     /// being passed in as the seed for the next Compute call.
     /// </remarks>
-    public sealed class CRC32 : HashAlgorithm
+    public sealed class CRC16CCITT : HashAlgorithm
     {
-        public const UInt32 DefaultPolynomial = 0xedb88320u;
-        public const UInt32 DefaultSeed = 0xffffffffu;
+        public const UInt16 DefaultPolynomial = 0x8408;
+        public const UInt16 DefaultSeed = 0xffff;
 
-        static UInt32[] defaultTable;
+        static UInt16[] defaultTable;
 
-        readonly UInt32 seed;
-        readonly UInt32[] table;
-        UInt32 hash;
+        readonly UInt16 seed;
+        readonly UInt16[] table;
+        UInt16 hash;
 
-        public CRC32() : this(DefaultPolynomial, DefaultSeed)
+        public CRC16CCITT() : this(DefaultPolynomial, DefaultSeed)
         {
         }
 
-        public CRC32(UInt32 polynomial, UInt32 seed)
+        public CRC16CCITT(UInt16 polynomial, UInt16 seed)
         {
             table = InitializeTable(polynomial);
             this.seed = hash = seed;
@@ -47,42 +47,42 @@ namespace HashCompute.HashAlgorithms
 
         protected override byte[] HashFinal()
         {
-            var hashBuffer = UInt32ToBigEndianBytes(~hash);
+            var hashBuffer = UInt16ToBigEndianBytes((UInt16)(~hash));
             HashValue = hashBuffer;
             return hashBuffer;
         }
 
-        public override int HashSize { get { return 32; } }
+        public override int HashSize { get { return 16; } }
 
-        public static UInt32 Compute(byte[] buffer)
+        public static UInt16 Compute(byte[] buffer)
         {
             return Compute(DefaultSeed, buffer);
         }
 
-        public static UInt32 Compute(UInt32 seed, byte[] buffer)
+        public static UInt16 Compute(UInt16 seed, byte[] buffer)
         {
             return Compute(DefaultPolynomial, seed, buffer);
         }
 
-        public static UInt32 Compute(UInt32 polynomial, UInt32 seed, byte[] buffer)
+        public static UInt16 Compute(UInt16 polynomial, UInt16 seed, byte[] buffer)
         {
-            return ~CalculateHash(InitializeTable(polynomial), seed, buffer, 0, buffer.Length);
+            return (UInt16)(~CalculateHash(InitializeTable(polynomial), seed, buffer, 0, buffer.Length));
         }
 
-        static UInt32[] InitializeTable(UInt32 polynomial)
+        static UInt16[] InitializeTable(UInt16 polynomial)
         {
             if (polynomial == DefaultPolynomial && defaultTable != null)
                 return defaultTable;
 
-            var createTable = new UInt32[256];
+            var createTable = new UInt16[256];
             for (var i = 0; i < 256; i++)
             {
-                var entry = (UInt32)i;
+                var entry = (UInt16)i;
                 for (var j = 0; j < 8; j++)
                     if ((entry & 1) == 1)
-                        entry = (entry >> 1) ^ polynomial;
+                        entry = (UInt16)((entry >> 1) ^ polynomial);
                     else
-                        entry = entry >> 1;
+                        entry = (UInt16)(entry >> 1);
                 createTable[i] = entry;
             }
 
@@ -92,17 +92,17 @@ namespace HashCompute.HashAlgorithms
             return createTable;
         }
 
-        static UInt32 CalculateHash(UInt32[] table, UInt32 seed, IList<byte> buffer, int start, int size)
+        static UInt16 CalculateHash(UInt16[] table, UInt16 seed, IList<byte> buffer, int start, int size)
         {
             var crc = seed;
             for (var i = start; i < size - start; i++)
-                crc = (crc >> 8) ^ table[buffer[i] ^ crc & 0xff];
+                crc = (UInt16)((crc >> 8) ^ table[buffer[i] ^ crc & 0xff]);
             return crc;
         }
 
-        static byte[] UInt32ToBigEndianBytes(UInt32 uint32)
+        static byte[] UInt16ToBigEndianBytes(UInt16 UInt16)
         {
-            var result = BitConverter.GetBytes(uint32);
+            var result = BitConverter.GetBytes(UInt16);
 
             if (BitConverter.IsLittleEndian)
                 Array.Reverse(result);

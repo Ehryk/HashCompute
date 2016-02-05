@@ -4,9 +4,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using HashCompute.HashAlgorithms;
+using Core.HashAlgorithms;
 
-namespace HashCompute
+namespace Core
 {
     public static class Hashes
     {

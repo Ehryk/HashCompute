@@ -49,7 +49,6 @@
   <ItemGroup>
     <Compile Include="AppSettings.cs" />
     <Compile Include="DataAccess.cs" />
-    <Compile Include="PopCount.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
@@ -60,13 +59,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HashCompute\HashCompute.csproj">
-      <Project>{753b08c1-3567-42dd-b06d-bf97d6053f4f}</Project>
-      <Name>HashCompute</Name>
-    </ProjectReference>
+    <Content Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{42794312-f253-4b18-9e58-55fed126a800}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="PostBuildMacros">
