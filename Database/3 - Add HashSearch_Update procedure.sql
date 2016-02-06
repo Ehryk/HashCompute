@@ -2,7 +2,7 @@
 USE HashSearch
 GO
 
-CREATE PROCEDURE [dbo].[HashSearch_Update] 
+CREATE PROCEDURE [dbo].[Search_Update] 
 (
 	@SearchID int,
 	@InputCount bigint = null,
@@ -11,14 +11,14 @@ CREATE PROCEDURE [dbo].[HashSearch_Update]
 AS
 BEGIN
 	BEGIN TRY
-		UPDATE HashSearch
+		UPDATE Search
 		SET
 			InputCount = @InputCount,
 			LastInput = @LastInput,
 			SearchSeconds = DATEDIFF(second, StartTime, SYSDATETIME())
 		WHERE ID = @SearchID
 
-		SELECT * FROM HashSearch s WHERE ID = @SearchID
+		SELECT * FROM Search s WHERE ID = @SearchID
 	END TRY
 	BEGIN CATCH
 		DECLARE @ErrorMessage NVARCHAR(4000);
@@ -39,4 +39,4 @@ END
 
 GO
 
-GRANT EXECUTE ON [dbo].[HashSearch_Update] TO HashSearch
+GRANT EXECUTE ON [dbo].[Search_Update] TO HashSearch
