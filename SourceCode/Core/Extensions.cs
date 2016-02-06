@@ -11,7 +11,7 @@ namespace Core
     public static class Extensions
     {
         /// <summary>
-        /// Convert Hash bytes to Hexadecimal String format 
+        /// Convert a byte array to a Hexadecimal String 
         /// </summary>
         public static string GetString(this byte[] hashBytes, bool uppercase = true)
         {
@@ -26,7 +26,7 @@ namespace Core
         }
 
         /// <summary>
-        /// Convert Hash bytes to Hexadecimal String format. Defaults to UTF8 Encoding.
+        /// Converts a string to a byte array. Defaults to UTF8 Encoding.
         /// </summary>
         public static byte[] ToBytes(this string input, Encoding encoding = null)
         {
@@ -35,7 +35,7 @@ namespace Core
         }
 
         /// <summary>
-        /// Convert Hash bytes to Hexadecimal String format 
+        /// Determines whether this string and a specified System.String object have the same value, while ignoring case by default (OrdinalIgnoreCase).
         /// </summary>
         public static bool EqualsIgnoreCase(this string input, string other, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
         {
@@ -43,7 +43,7 @@ namespace Core
         }
 
         /// <summary>
-        /// Remove non-alphanumeric characters from a string (and optionally whitespace as well)
+        /// Remove any non-alphanumeric characters from a string (and optionally whitespace as well)
         /// </summary>
         public static string ToAlphanumeric(this string input, bool allowWhiteSpace = false)
         {
@@ -53,6 +53,9 @@ namespace Core
             return new string(Array.FindAll(input.ToCharArray(), (c => (char.IsLetterOrDigit(c)))));
         }
 
+        /// <summary>
+        /// Returns the similarity index (how many bytes in the arrays are identical)
+        /// </summary>
         public static int ByteSimilarity(this byte[] input, byte[] other)
         {
             if (input == null || other == null)
@@ -60,10 +63,17 @@ namespace Core
             if (input.Length != other.Length)
                 throw new ArgumentException("Cannot XOR differing length byte arrays");
 
-            int xcount = input.Select((t, i) => t ^ other[i]).Count(xor => xor == 0);
+            int xcount = input.Select((t, i) => Precompiled.XOR[t, other[i]]).Count(xor => xor == 0);
+
+            //On the fly
+            //int xcount = input.Select((t, i) => t ^ other[i]).Count(xor => xor == 0);
+
             return xcount;
         }
 
+        /// <summary>
+        /// Returns the similarity index (how many bits in the arrays are identical)
+        /// </summary>
         public static int BitSimilarity(this byte[] input, byte[] other)
         {
             if (input == null || other == null)
@@ -74,8 +84,12 @@ namespace Core
             int xcount = 0;
             for (int i = 0; i < input.Length; i++)
             {
-                //Todo: Use precomputed array for runtime speed
-                int xor = input[i] ^ other[i];
+                //Precompiled
+                int xor = Precompiled.XOR[input[i], other[i]];
+
+                //On The Fly
+                //int xor = input[i] ^ other[i];
+
                 while (xor != 0)
                 {
                     xcount++;

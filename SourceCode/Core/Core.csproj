@@ -50,6 +50,9 @@
     <Compile Include="HashAlgorithms\CRC32K.cs" />
     <Compile Include="Hashes.cs" />
     <Compile Include="PopCount.cs" />
+    <Compile Include="Precompiled\Precompiled_AND.cs" />
+    <Compile Include="Precompiled\Precompiled_OR.cs" />
+    <Compile Include="Precompiled\Precompiled_XOR.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
