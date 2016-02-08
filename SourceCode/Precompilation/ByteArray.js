@@ -112,19 +112,19 @@ function getValue(type, a, b) {
 			return a & b;
 
 		case "NAND":
-			return ~(a & b);
+			return 255 - (a & b);
 
 		case "OR":
 			return a | b;
 			
 		case "NOR":
-			return ~(a | b);
+			return 255 - (a | b);
 			
 		case "XNOR":
-			return ~(a ^ b);
+			return 255 - (a ^ b);
 			
 		case "NOT":
-			return ~a;
+			return 255 - a;
 			
 		case "INC":
 			return (a + 1 == 256) ? 0 : a + 1;
