@@ -51,7 +51,8 @@ function generateCS(type, full) {
   if (dimensions(type) == 2)
   {
   	  //Two Dimensional
-	  content += "{0}public static byte[,] {1} = new byte[256,256] {{2}".format(isTrue(full) ? "        " : "", type, newline);
+	  content += "{0}public static byte[,] {1} = new byte[256,256]{2}".format(isTrue(full) ? "        " : "", type, newline);
+	  content += "{0}{{1}".format(isTrue(full) ? "        " : "    ", newline);
 	  for(var i = 0; i < array.length; i++)
 	  {
 	  	content += "{0}{ ".format(isTrue(full) ? "            " : "    ");
@@ -68,7 +69,8 @@ function generateCS(type, full) {
   else
   {
   	  //One Dimensional
-	  content += "{0}public static byte[] {1} = new byte[256] {{2}".format(isTrue(full) ? "        " : "", type, newline);
+	  content += "{0}public static byte[] {1} = new byte[256]{2}".format(isTrue(full) ? "        " : "", type, newline);
+	  content += "{0}{{1}".format(isTrue(full) ? "        " : "    ", newline);
 	  for(var i = 0; i < array.length; i++)
 	  {
 	  	content += "{0}".format(isTrue(full) ? "            " : "    ");
@@ -108,12 +110,21 @@ function getValue(type, a, b) {
 			
 		case "AND":
 			return a & b;
-			
+
+		case "NAND":
+			return ~(a & b);
+
 		case "OR":
 			return a | b;
 			
 		case "NOR":
-			return 255 - a;
+			return ~(a | b);
+			
+		case "XNOR":
+			return ~(a ^ b);
+			
+		case "NOT":
+			return ~a;
 			
 		case "INC":
 			return (a + 1 == 256) ? 0 : a + 1;
@@ -137,7 +148,7 @@ function getValue(type, a, b) {
 }
 
 function dimensions(type) {
-  if (["AND", "OR", "XOR"].indexOf(type) >= 0)
+  if (["AND", "NAND", "OR", "NOR", "XOR", "XNOR"].indexOf(type) >= 0)
   	return 2;
   return 1;
 }

@@ -4,7 +4,8 @@ namespace Core
 {
     public static partial class Precompiled
     {
-        public static byte[] DEC = new byte[256] {
+        public static byte[] DEC = new byte[256]
+        {
             0x00, //0
             0x00, //1
             0x01, //2
