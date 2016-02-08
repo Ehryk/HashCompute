@@ -51,7 +51,14 @@
     <Compile Include="Hashes.cs" />
     <Compile Include="PopCount.cs" />
     <Compile Include="Precompiled\Precompiled_AND.cs" />
+    <Compile Include="Precompiled\Precompiled_DEC.cs" />
+    <Compile Include="Precompiled\Precompiled_INC.cs" />
+    <Compile Include="Precompiled\Precompiled_NAND.cs" />
+    <Compile Include="Precompiled\Precompiled_NOR.cs" />
+    <Compile Include="Precompiled\Precompiled_NOT.cs" />
     <Compile Include="Precompiled\Precompiled_OR.cs" />
+    <Compile Include="Precompiled\Precompiled_REV.cs" />
+    <Compile Include="Precompiled\Precompiled_XNOR.cs" />
     <Compile Include="Precompiled\Precompiled_XOR.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

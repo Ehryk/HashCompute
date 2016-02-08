@@ -79,8 +79,8 @@ namespace Core.HashAlgorithms
             {
                 var entry = (UInt32)i;
                 for (var j = 0; j < 8; j++)
-                    if ((entry & 1) == 1)
-                        entry = (entry >> 1) ^ polynomial;
+                    if (Precompiled.AND[entry, 1] == 1)
+                        entry = Precompiled.XOR[(entry >> 1), polynomial];
                     else
                         entry = entry >> 1;
                 createTable[i] = entry;

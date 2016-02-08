@@ -63,10 +63,11 @@ namespace Core
             if (input.Length != other.Length)
                 throw new ArgumentException("Cannot XOR differing length byte arrays");
 
-            int xcount = input.Select((t, i) => Precompiled.XOR[t, other[i]]).Count(xor => xor == 0);
+            //Precompiled Implementation
+            //int xcount = input.Select((t, i) => Precompiled.XOR[t, other[i]]).Count(xor => xor == 0);
 
-            //On the fly
-            //int xcount = input.Select((t, i) => t ^ other[i]).Count(xor => xor == 0);
+            //.NET Implentation
+            int xcount = input.Select((t, i) => t ^ other[i]).Count(xor => xor == 0);
 
             return xcount;
         }
@@ -84,11 +85,11 @@ namespace Core
             int xcount = 0;
             for (int i = 0; i < input.Length; i++)
             {
-                //Precompiled
-                int xor = Precompiled.XOR[input[i], other[i]];
+                //Precompiled Implementation
+                //int xor = Precompiled.XOR[input[i], other[i]];
 
-                //On The Fly
-                //int xor = input[i] ^ other[i];
+                //.NET Implentation
+                int xor = input[i] ^ other[i];
 
                 while (xor != 0)
                 {
