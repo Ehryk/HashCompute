@@ -130,7 +130,7 @@ function getValue(type, a, b) {
 			return (a + 1 == 256) ? 0 : a + 1;
 			
 		case "DEC":
-			return (a - 1 == -1) ? 0 : a - 1;;
+			return (a == 0) ? 255 : a - 1;;
 			
 		case "REV":
 			return  1 * (a >=128 ? 1 : 0) + 

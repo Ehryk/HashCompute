@@ -6,7 +6,7 @@ namespace Core
     {
         public static byte[] DEC = new byte[256]
         {
-            0x00, //0
+            0xFF, //0
             0x00, //1
             0x01, //2
             0x02, //3
