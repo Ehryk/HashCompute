@@ -1,4 +1,4 @@
-HashCompute v1.5
+HashCompute v2.0
 ================
 
 This Windows console application will return the hashed output of the first parameter (currently only C# System.Cryptography classes supported). This can be interpreted as a file (or list of files, newline or comma or semicolon separated) to calculate the hash of their contents with the `-f` switch. The hash algorithm is SHA512 by default and uses a Managed implementation when possible (unless `-u` or `--unmanaged` is specified). Other hash algorithms selectable are SHA1, SHA256, SHA384, MD5 and RIPEMD, passed by name as the second parameter (optional) or anywhere in the command line with `-a=` or `--algorithm=`.
@@ -41,7 +41,8 @@ Latest Changes:
 
 Release History:
 ---
- - v1.5 (In Development)
+ - v2.0 2016.02.09 Refactored with a 'Core' Class Library, added precompiled byte arrays
+ - v1.5 2016.01.30 Added CRC32 support, decimal mode
  - v1.4 2015.04.06 Added support for various encodings, text mode
  - v1.3 2015.04.05 Added support for hashing file contents
  - v1.2 2015.04.04 Added support for redirection/piping (Stdin)
