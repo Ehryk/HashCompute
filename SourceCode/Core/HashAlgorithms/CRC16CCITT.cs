@@ -16,8 +16,8 @@ namespace Core.HashAlgorithms
     /// </remarks>
     public sealed class CRC16CCITT : HashAlgorithm
     {
-        public const UInt16 DefaultPolynomial = 0x8408;
-        public const UInt16 DefaultSeed = 0xffff;
+        public const UInt16 DefaultPolynomial = (UInt16)0x8408u;
+        public const UInt16 DefaultSeed = (UInt16)0xFFFFu;
 
         static UInt16[] defaultTable;
 
@@ -47,7 +47,10 @@ namespace Core.HashAlgorithms
 
         protected override byte[] HashFinal()
         {
+            // Reverse CRC result before Final XOR
             var hashBuffer = UInt16ToBigEndianBytes((UInt16)(~hash));
+            // Don't Reverse CRC result before Final XOR
+            //var hashBuffer = UInt16ToBigEndianBytes((UInt16)(hash));
             HashValue = hashBuffer;
             return hashBuffer;
         }
@@ -66,7 +69,7 @@ namespace Core.HashAlgorithms
 
         public static UInt16 Compute(UInt16 polynomial, UInt16 seed, byte[] buffer)
         {
-            return (UInt16)(~CalculateHash(InitializeTable(polynomial), seed, buffer, 0, buffer.Length));
+            return (UInt16)(CalculateHash(InitializeTable(polynomial), seed, buffer, 0, buffer.Length));
         }
 
         static UInt16[] InitializeTable(UInt16 polynomial)
@@ -96,7 +99,7 @@ namespace Core.HashAlgorithms
         {
             var crc = seed;
             for (var i = start; i < size - start; i++)
-                crc = (UInt16)((crc >> 8) ^ table[buffer[i] ^ crc & 0xff]);
+                crc = (UInt16)((crc >> 8) ^ table[buffer[i] ^ crc & 0xFF]);
             return crc;
         }
 

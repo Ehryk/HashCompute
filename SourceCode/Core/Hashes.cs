@@ -69,6 +69,13 @@ namespace Core
                 case "Koopman":
                     return new CRC32K();
 
+                case "CRC16":
+                    return new CRC16();
+
+                case "CRC16C":
+                case "CRC16CCITT":
+                    return new CRC16CCITT();
+
                 case "RIPEMD":
                 case "RIP":
                 case "EMD":

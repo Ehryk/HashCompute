@@ -44,6 +44,7 @@
     <Compile Include="ApplicationInfo.cs" />
     <Compile Include="Encodings.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="HashAlgorithms\CRC16.cs" />
     <Compile Include="HashAlgorithms\CRC16CCITT.cs" />
     <Compile Include="HashAlgorithms\CRC32.cs" />
     <Compile Include="HashAlgorithms\CRC32C.cs" />
