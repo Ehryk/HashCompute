@@ -102,8 +102,22 @@ namespace HashSearch
 
                                     if (options.Database)
                                         DataAccess.ChainLengthInsert(options.Algorithm, chainStart, chainLength);
-                              
-                                    chainStart = chainStart.AddOne();
+
+                                    try
+                                    {
+                                        chainStart = chainStart.AddOne();
+                                    }
+                                    catch (OverflowException ex)
+                                    {
+                                        //Chainlength Mode has overflown; domain exhausted
+                                        if (Color)
+                                            Console.ForegroundColor = ConsoleColor.Green;
+                                        Console.Write("Processing Finished: Domain Exhausted", ex.Message);
+                                        Console.ResetColor();
+
+                                        retCode = SUCCESS;
+                                        break;
+                                    }
                                     chainLength = 0;
                                     Buffer.BlockCopy(chainStart, 0, result, 0, ha.HashSize / 8);
                                     inputCount++;
@@ -124,7 +138,21 @@ namespace HashSearch
                                         Console.ResetColor();
                                     }
 
-                                    chainStart = chainStart.AddOne();
+                                    try
+                                    {
+                                        chainStart = chainStart.AddOne();
+                                    }
+                                    catch (OverflowException ex)
+                                    {
+                                        //Chainlength Mode has overflown; domain exhausted
+                                        if (Color)
+                                            Console.ForegroundColor = ConsoleColor.Green;
+                                        Console.Write("Processing Finished: Domain Exhausted", ex.Message);
+                                        Console.ResetColor();
+
+                                        retCode = SUCCESS;
+                                        break;
+                                    }
                                     chainLength = 0;
                                     Buffer.BlockCopy(chainStart, 0, result, 0, ha.HashSize / 8);
                                     inputCount++;
@@ -252,7 +280,7 @@ namespace HashSearch
                                     //Sequential Mode has overflown; domain exhausted
                                     if (Color)
                                         Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.WriteLine("Processing Finished: {0}", ex.Message);
+                                    Console.Write("Processing Finished: {0}", ex.Message.StartsWith("Final") ? ex.Message : "Domain Exhausted");
                                     Console.ResetColor();
 
                                     retCode = SUCCESS;
