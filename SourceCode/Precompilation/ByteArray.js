@@ -62,7 +62,7 @@ function generateCS(type, full) {
 	  		content += "0x{0}{1}".format(getHexByte(array[i][j]), lastItem ? "" : ", ");
 	  	}
 	  	var lastItem = i == array[i].length - 1;
-	  	content += " }{0} //{1}{2}".format(lastItem ? "" : ",", i,  newline);
+	  	content += " }{0} //{1}{2}".format(lastItem ? "" : ",", getHexByte(i),  newline);
 	  }
 	  content += "{0}};".format(isTrue(full) ? "        " : "", type);
   }
@@ -76,7 +76,7 @@ function generateCS(type, full) {
 	  	content += "{0}".format(isTrue(full) ? "            " : "    ");
 	  	content += "0x{0}".format(getHexByte(array[i]));
 	  	var lastItem = i == array.length - 1;
-	  	content += "{0} //{1}{2}".format(lastItem ? "" : ",", i, newline);
+	  	content += "{0} //0x{1}{2}".format(lastItem ? "" : ",", getHexByte(i), newline);
 	  }
 	  content += "{0}};".format(isTrue(full) ? "        " : "", type);
   }
