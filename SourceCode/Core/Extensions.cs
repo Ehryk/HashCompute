@@ -132,9 +132,9 @@ namespace Core
             if (hex.Length % 2 != 0) hex = hex.PadLeft(hex.Length + 1, '0');
 
             return Enumerable.Range(0, hex.Length)
-                 .Where(x => x % 2 == 0)
-                 .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                 .ToArray();
+                    .Where(x => x % 2 == 0)
+                    .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                    .ToArray();
         }
 
         public static byte[] GetOctalBytes(this string octal, bool preTrimmed = false)
@@ -142,11 +142,13 @@ namespace Core
             if (!preTrimmed)
             {
                 octal = octal.Trim();
-                if (octal.StartsWith("8#") || octal.StartsWith("0o"))
+                if (octal.StartsWith("0o", StringComparison.OrdinalIgnoreCase) || octal.StartsWith("8#"))
                     octal = octal.Substring(2);
             }
 
             octal = octal.TrimStart('0');
+            if (octal.Length == 0)
+                octal = "0";
 
             BitArray bits = new BitArray(octal
                 .Reverse()
@@ -160,9 +162,10 @@ namespace Core
             byte[] bytes = new byte[bits.Length / 8 + 1];
             bits.CopyTo(bytes, 0);
 
-            if (bytes[bytes.Length - 1] == 0x00)
-                bytes = bytes.Take(bytes.Length - 1).ToArray();
-                    
+            bytes = bytes.Reverse().SkipWhile(b => b == 0x00).ToArray();
+            if (bytes.Length == 0)
+                bytes = new byte[] { 0x00 };
+
             return bytes;
         }
 
